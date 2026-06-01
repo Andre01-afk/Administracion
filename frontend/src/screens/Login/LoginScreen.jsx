@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert, KeyboardAvoidingView, 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { TextInput } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
+import Toast from 'react-native-toast-message';
 import { useAuth } from '../../context/AuthContext';
 
 const LoginScreen = () => {
@@ -15,7 +16,12 @@ const LoginScreen = () => {
 
     const handleLogin = async () => {
         if (!email.trim() || !password.trim()) {
-            Alert.alert('Error', 'Please enter both email and password');
+            Toast.show({
+                type: 'error',
+                text1: 'Error',
+                text2: 'Por favor ingresa correo y contraseña',
+                duration: 2000,
+            });
             return;
         }
 
@@ -24,9 +30,20 @@ const LoginScreen = () => {
         setLoading(false);
 
         if (result.success) {
-            navigation.navigate('Main');
+            Toast.show({
+                type: 'success',
+                text1: 'Login exitoso',
+                text2: 'Bienvenido de vuelta',
+                duration: 2000,
+            });
+            // La navegación es automática porque isAuthenticated cambió en App.js
         } else {
-            Alert.alert('Login Failed', result.error || 'Invalid credentials');
+            Toast.show({
+                type: 'error',
+                text1: 'Error de login',
+                text2: result.error || 'Credenciales inválidas',
+                duration: 2000,
+            });
         }
     };
 
@@ -90,9 +107,7 @@ const LoginScreen = () => {
                                     <Text style={styles.footerLink}>Sign Up</Text>
                                 </TouchableOpacity>
                             </View>
-                            <Text style={styles.footerNote}>
-                                For demo purposes, any email/password will work
-                            </Text>
+                            
                         </View>
                     </View>
                 </View>

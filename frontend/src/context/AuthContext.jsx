@@ -3,6 +3,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AuthContext = createContext();
 
+// Backend API URL
+const API_URL = 'http://localhost:3000/api/v1';
+
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) {
@@ -14,6 +17,7 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [token, setToken] = useState(null);
 
     useEffect(() => {
         // Check if user is logged in on app start
@@ -22,8 +26,10 @@ export const AuthProvider = ({ children }) => {
 
     const checkLoginStatus = async () => {
         try {
+            const savedToken = await AsyncStorage.getItem('token');
             const userData = await AsyncStorage.getItem('user');
-            if (userData) {
+            if (savedToken && userData) {
+                setToken(savedToken);
                 setUser(JSON.parse(userData));
             }
         } catch (error) {
@@ -40,21 +46,29 @@ export const AuthProvider = ({ children }) => {
                 throw new Error('Email and password are required');
             }
 
-            // For demo purposes, accept any email/password combination
-            // In a real app, you would make an API call here
-            const userData = {
-                id: '1',
-                name: email.split('@')[0] || 'User',
-                email: email,
-                phone: '+1 234 567 8900',
-                location: 'New York, USA',
-                donationsCount: 12,
-                volunteerHours: 24,
-            };
+            // Call backend API
+            const response = await fetch(`${API_URL}/auth/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }),
+            });
 
-            // Store user data
-            await AsyncStorage.setItem('user', JSON.stringify(userData));
-            setUser(userData);
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Login failed');
+            }
+
+            const data = await response.json();
+            const { token, user } = data;
+
+            // Store token and user data
+            await AsyncStorage.setItem('token', token);
+            await AsyncStorage.setItem('user', JSON.stringify(user));
+            
+            setToken(token);
+            setUser(user);
             return { success: true };
         } catch (error) {
             console.error('Login error:', error);
@@ -62,28 +76,42 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const register = async (name, email, password, phone, location) => {
+    const register = async (name, email, password, phone, role) => {
         try {
             // Basic validation
-            if (!name || !email || !password) {
-                throw new Error('Name, email, and password are required');
+            if (!name || !email || !password || !role) {
+                throw new Error('Name, email, password, and role are required');
             }
 
-            // For demo purposes, create a new user
-            // In a real app, you would make an API call here
-            const userData = {
-                id: Date.now().toString(),
-                name: name,
-                email: email,
-                phone: phone || '+1 234 567 8900',
-                location: location || 'New York, USA',
-                donationsCount: 0,
-                volunteerHours: 0,
-            };
+            // Call backend API
+            const response = await fetch(`${API_URL}/auth/register`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name,
+                    email,
+                    password,
+                    phone: phone || '',
+                    role,
+                }),
+            });
 
-            // Store user data
-            await AsyncStorage.setItem('user', JSON.stringify(userData));
-            setUser(userData);
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Registration failed');
+            }
+
+            const data = await response.json();
+            const { token, user } = data;
+
+            // Store token and user data
+            await AsyncStorage.setItem('token', token);
+            await AsyncStorage.setItem('user', JSON.stringify(user));
+            
+            setToken(token);
+            setUser(user);
             return { success: true };
         } catch (error) {
             console.error('Registration error:', error);
@@ -93,7 +121,9 @@ export const AuthProvider = ({ children }) => {
 
     const logout = async () => {
         try {
+            await AsyncStorage.removeItem('token');
             await AsyncStorage.removeItem('user');
+            setToken(null);
             setUser(null);
         } catch (error) {
             console.error('Logout error:', error);
@@ -103,10 +133,11 @@ export const AuthProvider = ({ children }) => {
     const value = {
         user,
         loading,
+        token,
         login,
         register,
         logout,
-        isAuthenticated: !!user,
+        isAuthenticated: !!token && !!user,
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -1,14 +1,59 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Image, StyleSheet, Linking } from 'react-native';
 import { Surface, Text, Button } from 'react-native-paper';
 import { MaterialIcons } from '@expo/vector-icons';
+import { getFirstValidPhoto, isValidImageUrl } from '../../../utils/imageUtils';
 
 const MyTaskCard = ({ donation, onComplete }) => {
+    const [imageError, setImageError] = useState(false);
+
+    // Destructure datos reales del backend
+    const {
+        id,
+        foodType,
+        approxQuantity,
+        quantityUnit = 'portions',
+        area,
+        pickupAddress,
+        preferredPickupTime,
+        contactNumber,
+        photos,
+        donor,
+    } = donation;
+
+    // Calcular fecha/hora
+    const formatDateTime = (dateString) => {
+        if (!dateString) return 'No especificada';
+        const date = new Date(dateString);
+        return date.toLocaleString('es-ES', { 
+            month: 'short', 
+            day: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+    };
+
+    const photoUrl = getFirstValidPhoto(photos);
+    const hasValidPhoto = photoUrl && isValidImageUrl(photoUrl) && !imageError;
+    const donorPhone = donor?.phone;
+
+    const handleDirections = () => {
+        const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(pickupAddress)}`;
+        Linking.openURL(mapsUrl);
+    };
+
     return (
         <Surface style={styles.taskCard} elevation={2}>
             <View style={styles.taskImageContainer}>
-                {donation.foodImage ? (
-                    <Image source={typeof donation.foodImage === 'string' ? { uri: donation.foodImage } : donation.foodImage} style={styles.taskImage} />
+                {hasValidPhoto ? (
+                    <Image 
+                        source={{ uri: photoUrl }} 
+                        style={styles.taskImage}
+                        onError={() => {
+                            console.warn('Image failed to load in task:', photoUrl?.substring(0, 50));
+                            setImageError(true);
+                        }}
+                    />
                 ) : (
                     <View style={[styles.taskImage, styles.placeholderImage]}>
                         <MaterialIcons name="fastfood" size={40} color="#9e9e9e" />
@@ -17,43 +62,47 @@ const MyTaskCard = ({ donation, onComplete }) => {
             </View>
 
             <View style={styles.taskContent}>
-                <Text style={styles.taskTitle}>{donation.foodType}</Text>
+                <Text style={styles.taskTitle}>{foodType}</Text>
 
                 <View style={styles.taskInfoRow}>
-                    <MaterialIcons name="location-on" size={16} color="#666" />
-                    <Text style={styles.taskInfoText}>{donation.area}</Text>
+                    <MaterialIcons name="location-on" size={16} color="#1ABC9C" />
+                    <Text style={styles.taskInfoText}>{area}</Text>
                 </View>
 
                 <View style={styles.taskInfoRow}>
-                    <MaterialIcons name="access-time" size={16} color="#666" />
-                    <Text style={styles.taskInfoText}>{donation.pickupTime}</Text>
+                    <MaterialIcons name="access-time" size={16} color="#1ABC9C" />
+                    <Text style={styles.taskInfoText}>{formatDateTime(preferredPickupTime)}</Text>
                 </View>
 
                 <View style={styles.taskInfoRow}>
-                    <MaterialIcons name="phone" size={16} color="#666" />
-                    <Text style={styles.taskInfoText}>{donation.donorPhone}</Text>
+                    <MaterialIcons name="inventory" size={16} color="#1ABC9C" />
+                    <Text style={styles.taskInfoText}>{approxQuantity} {quantityUnit}</Text>
                 </View>
+
+                {donorPhone && (
+                    <View style={styles.taskInfoRow}>
+                        <MaterialIcons name="phone" size={16} color="#1ABC9C" />
+                        <Text style={styles.taskInfoText}>{donorPhone}</Text>
+                    </View>
+                )}
 
                 <View style={styles.taskActions}>
                     <Button
                         mode="outlined"
                         compact
                         icon="directions"
-                        onPress={() => {
-                            const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(donation.fullAddress || donation.area)}`;
-                            Linking.openURL(mapsUrl);
-                        }}
+                        onPress={handleDirections}
                         style={styles.taskButton}
                     >
-                        Directions
+                        Direcciones
                     </Button>
                     <Button
                         mode="contained"
                         compact
-                        onPress={() => onComplete(donation.id)}
+                        onPress={() => onComplete(id)}
                         style={styles.taskButton}
                     >
-                        Complete
+                        Completar
                     </Button>
                 </View>
             </View>

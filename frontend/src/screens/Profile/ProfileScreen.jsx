@@ -1,109 +1,153 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, CommonActions } from '@react-navigation/native';
+import Toast from 'react-native-toast-message';
 import { useAuth } from '../../context/AuthContext';
+import { userService, donorService, volunteerService } from '../../services/apiService';
 
 const ProfileScreen = () => {
     const { user, logout } = useAuth();
     const navigation = useNavigation();
+    const [profileData, setProfileData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    // Use user data from auth context, fallback to default if not available
-    const userData = user || {
+    useEffect(() => {
+        loadProfileData();
+    }, []);
+
+    const loadProfileData = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            
+            // Cargar datos del usuario
+            const userData = await userService.getProfile();
+            setProfileData(userData);
+        } catch (err) {
+            console.error('Error loading profile:', err);
+            setError(err.message);
+            // Fallback al usuario del auth context
+            setProfileData(user || {
+                name: 'Usuario',
+                email: user?.email || 'email@example.com',
+                phone: '+1 234 567 8900',
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Use loaded profile data, fallback to auth user
+    const displayData = profileData || user || {
         name: 'John Doe',
         email: 'john.doe@example.com',
         phone: '+1 234 567 8900',
         location: 'New York, USA',
-        donationsCount: 12,
-        volunteerHours: 24,
     };
 
-    const handleLogout = () => {
-        Alert.alert(
-            'Logout',
-            'Are you sure you want to logout?',
-            [
-                {
-                    text: 'Cancel',
-                    style: 'cancel',
-                },
-                {
-                    text: 'Logout',
-                    style: 'destructive',
-                    onPress: async () => {
-                        await logout();
-                        // Get the root navigator (Stack Navigator) and reset to Login
-                        const rootNavigation = navigation.getParent() || navigation;
-                        rootNavigation.dispatch(
-                            CommonActions.reset({
-                                index: 0,
-                                routes: [{ name: 'Login' }],
-                            })
-                        );
-                    },
-                },
-            ]
-        );
+    const handleLogout = async () => {
+        Toast.show({
+            type: 'info',
+            text1: 'Cerrando sesión...',
+            duration: 2000,
+        });
+        await logout();
+        Toast.show({
+            type: 'success',
+            text1: 'Sesión cerrada',
+            text2: 'Has cerrado sesión correctamente',
+            duration: 2000,
+        });
     };
+
+    const handleEditProfile = () => {
+        Toast.show({
+            type: 'info',
+            text1: 'Próximamente',
+            text2: 'La funcionalidad de edición se agregará pronto',
+            duration: 2000,
+        });
+    };
+
+    const handleSettings = () => {
+        Toast.show({
+            type: 'info',
+            text1: 'Próximamente',
+            text2: 'La página de configuración se agregará pronto',
+            duration: 2000,
+        });
+    };
+
 
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-                <View style={styles.header}>
-                    <View style={styles.avatarContainer}>
-                        <View style={styles.avatar}>
-                            <Text style={styles.avatarText}>
-                                {userData.name.split(' ').map(n => n[0]).join('')}
-                            </Text>
+                {loading ? (
+                    <View style={styles.loadingContainer}>
+                        <ActivityIndicator size="large" color="#1ABC9C" />
+                        <Text style={styles.loadingText}>Cargando perfil...</Text>
+                    </View>
+                ) : (
+                    <>
+                        <View style={styles.header}>
+                            <View style={styles.avatarContainer}>
+                                <View style={styles.avatar}>
+                                    <Text style={styles.avatarText}>
+                                        {displayData.name.split(' ').map(n => n[0]).join('')}
+                                    </Text>
+                                </View>
+                            </View>
+                            <Text style={styles.name}>{displayData.name}</Text>
+                            <Text style={styles.email}>{displayData.email}</Text>
                         </View>
-                    </View>
-                    <Text style={styles.name}>{userData.name}</Text>
-                    <Text style={styles.email}>{userData.email}</Text>
-                </View>
 
-                <View style={styles.statsContainer}>
-                    <View style={styles.statCard}>
-                        <Text style={styles.statNumber}>{userData.donationsCount}</Text>
-                        <Text style={styles.statLabel}>Donations</Text>
-                    </View>
-                    <View style={styles.statCard}>
-                        <Text style={styles.statNumber}>{userData.volunteerHours}</Text>
-                        <Text style={styles.statLabel}>Volunteer Hours</Text>
-                    </View>
-                </View>
+                        <View style={styles.infoSection}>
+                            <Text style={styles.sectionTitle}>Información de Contacto</Text>
+                            
+                            <View style={styles.infoRow}>
+                                <Text style={styles.infoLabel}>Email</Text>
+                                <Text style={styles.infoValue}>{displayData.email}</Text>
+                            </View>
+                            
+                            <View style={styles.infoRow}>
+                                <Text style={styles.infoLabel}>Teléfono</Text>
+                                <Text style={styles.infoValue}>{displayData.phone || 'No disponible'}</Text>
+                            </View>
+                            
+                            {displayData.location && (
+                                <View style={styles.infoRow}>
+                                    <Text style={styles.infoLabel}>Ubicación</Text>
+                                    <Text style={styles.infoValue}>{displayData.location}</Text>
+                                </View>
+                            )}
+                        </View>
 
-                <View style={styles.infoSection}>
-                    <Text style={styles.sectionTitle}>Contact Information</Text>
-                    
-                    <View style={styles.infoRow}>
-                        <Text style={styles.infoLabel}>Email</Text>
-                        <Text style={styles.infoValue}>{userData.email}</Text>
-                    </View>
-                    
-                    <View style={styles.infoRow}>
-                        <Text style={styles.infoLabel}>Phone</Text>
-                        <Text style={styles.infoValue}>{userData.phone}</Text>
-                    </View>
-                    
-                    <View style={styles.infoRow}>
-                        <Text style={styles.infoLabel}>Location</Text>
-                        <Text style={styles.infoValue}>{userData.location}</Text>
-                    </View>
-                </View>
+                        <View style={styles.actionsContainer}>
+                            <TouchableOpacity 
+                                style={styles.editButton}
+                                onPress={handleEditProfile}
+                            >
+                                <Text style={styles.editButtonText}>Editar Perfil</Text>
+                            </TouchableOpacity>
+                            
+                            <TouchableOpacity 
+                                style={styles.settingsButton}
+                                onPress={handleSettings}
+                            >
+                                <Text style={styles.settingsButtonText}>Configuración</Text>
+                            </TouchableOpacity>
 
-                <View style={styles.actionsContainer}>
-                    <TouchableOpacity style={styles.editButton}>
-                        <Text style={styles.editButtonText}>Edit Profile</Text>
-                    </TouchableOpacity>
-                    
-                    <TouchableOpacity style={styles.settingsButton}>
-                        <Text style={styles.settingsButtonText}>Settings</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-                        <Text style={styles.logoutButtonText}>Logout</Text>
-                    </TouchableOpacity>
-                </View>
+                            <TouchableOpacity 
+                                style={styles.logoutButton} 
+                                onPress={handleLogout}
+                            >
+                                <Text style={styles.logoutButtonText}>Cerrar Sesión</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </>
+                )}
             </ScrollView>
         </SafeAreaView>
     );
@@ -116,6 +160,17 @@ const styles = StyleSheet.create({
     },
     scrollView: {
         flex: 1,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingVertical: 64,
+    },
+    loadingText: {
+        marginTop: 16,
+        fontSize: 16,
+        color: '#666',
     },
     header: {
         alignItems: 'center',

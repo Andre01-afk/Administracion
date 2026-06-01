@@ -1,35 +1,64 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { Card, Button, Avatar, useTheme } from 'react-native-paper';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { getFirstValidPhoto, isValidImageUrl } from '../../../utils/imageUtils';
 
 const DonationCard = ({ donation, onAccept, onPress, isAccepted = false }) => {
   const theme = useTheme();
+  const [imageError, setImageError] = useState(false);
+  
+  // Destructure datos reales del backend
   const {
+    id,
     foodType,
-    quantity,
+    approxQuantity,
+    quantityUnit = 'portions',
     area,
-    pickupTime,
-    donorName,
-    meals,
-    foodImage,
-    isVeg,
-    isPackaged
+    pickupAddress,
+    preferredPickupTime,
+    contactNumber,
+    photos,
+    donor,
+    status,
   } = donation;
+
+  // Calcular fecha/hora
+  const formatDateTime = (dateString) => {
+    if (!dateString) return 'No especificada';
+    const date = new Date(dateString);
+    return date.toLocaleString('es-ES', { 
+      month: 'short', 
+      day: 'numeric', 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+  };
+
+  const photoUrl = getFirstValidPhoto(photos);
+  const hasValidPhoto = photoUrl && isValidImageUrl(photoUrl) && !imageError;
+
   return (
     <Card style={styles.card} onPress={onPress}>
       <View style={styles.cardContent}>
         <View style={styles.imageContainer}>
-          {foodImage ? (
+          {hasValidPhoto ? (
             <Image
-              source={typeof foodImage === 'string' ? { uri: foodImage } : foodImage}
+              source={{ uri: photoUrl }}
               style={styles.foodImage}
               resizeMode="cover"
+              onError={() => {
+                console.warn('Image failed to load:', photoUrl?.substring(0, 50));
+                setImageError(true);
+              }}
+              onLoad={() => console.log('Image loaded successfully')}
             />
           ) : (
-            <MaterialIcons name="fastfood" size={40} color="#9e9e9e" />
-          )}
-        </View>
+            <View style={styles.placeholderIcon}>
+              <MaterialIcons name="fastfood" size={40} color="#9e9e9e" />
+            </View>
+          )
+        }</View>
 
         <View style={styles.detailsContainer}>
           <View style={styles.headerRow}>
@@ -43,55 +72,24 @@ const DonationCard = ({ donation, onAccept, onPress, isAccepted = false }) => {
 
               <View style={styles.infoRow}>
                 <MaterialIcons name="access-time" size={16} color="#666" />
-                <Text style={styles.infoText}>{pickupTime}</Text>
+                <Text style={styles.infoText}>{formatDateTime(preferredPickupTime)}</Text>
               </View>
 
-              <View style={styles.chipContainer}>
-                <View
-                  style={[
-                    styles.chip,
-                    {
-                      backgroundColor: isVeg ? 'rgba(76, 175, 80, 0.1)' : 'rgba(244, 67, 54, 0.1)',
-                      borderColor: isVeg ? '#4CAF50' : '#F44336'
-                    }
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.chipText,
-                      { color: isVeg ? '#4CAF50' : '#F44336' }
-                    ]}
-                  >
-                    {isVeg ? 'Veg' : 'Non-Veg'}
-                  </Text>
-                </View>
-
-                <View
-                  style={[
-                    styles.chip,
-                    {
-                      backgroundColor: 'rgba(41, 128, 185, 0.1)',
-                      borderColor: '#2980B9'
-                    }
-                  ]}
-                >
-                  <Text style={[styles.chipText, { color: '#2980B9' }]}>
-                    {isPackaged ? 'Packaged' : 'Fresh'}
-                  </Text>
-                </View>
+              <View style={styles.infoRow}>
+                <MaterialIcons name="home" size={16} color="#666" />
+                <Text style={styles.infoText} numberOfLines={1}>{pickupAddress}</Text>
               </View>
             </View>
 
             <View style={styles.quantityContainer}>
-              <Text style={styles.quantityText}>{quantity}</Text>
-              <Text style={styles.mealsText}>servings</Text>
-              <Text style={styles.mealsSubText}>~{meals} meals</Text>
+              <Text style={styles.quantityText}>{approxQuantity}</Text>
+              <Text style={styles.mealsText}>{quantityUnit}</Text>
             </View>
           </View>
 
-          {donorName && (
+          {donor && (
             <Text style={styles.donorText}>
-              Donated by: {donorName}
+              Por: {donor.name}
             </Text>
           )}
         </View>
@@ -122,7 +120,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     elevation: 4,
     backgroundColor: 'white',
-    marginHorizontal: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -130,16 +127,17 @@ const styles = StyleSheet.create({
   },
   cardContent: {
     flexDirection: 'row',
-    padding: 12,
+    padding: 16,
   },
   imageContainer: {
-    width: 100,
-    height: 100,
+    width: 120,
+    height: 120,
     borderRadius: 12,
     backgroundColor: '#f5f5f5',
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
+    marginRight: 16,
   },
   foodImage: {
     width: '100%',
@@ -147,7 +145,6 @@ const styles = StyleSheet.create({
   },
   detailsContainer: {
     flex: 1,
-    paddingLeft: 12,
     justifyContent: 'space-between',
   },
   headerRow: {
@@ -159,39 +156,20 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   foodType: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 6,
+    marginBottom: 8,
     color: '#333',
   },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   infoText: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#666',
-    marginLeft: 6,
-  },
-  chipContainer: {
-    flexDirection: 'row',
-    marginTop: 8,
-    flexWrap: 'wrap',
-  },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    borderWidth: 1,
-    marginRight: 8,
-    marginBottom: 4,
-  },
-  chipText: {
-    fontSize: 11,
-    fontWeight: '600',
+    marginLeft: 8,
   },
   quantityContainer: {
     alignItems: 'center',
@@ -208,14 +186,10 @@ const styles = StyleSheet.create({
     color: '#1ABC9C',
   },
   mealsText: {
-    fontSize: 10,
+    fontSize: 11,
     color: '#666',
     fontWeight: '500',
-  },
-  mealsSubText: {
-    fontSize: 10,
-    color: '#999',
-    marginTop: 2,
+    marginTop: 4,
   },
   donorText: {
     fontSize: 12,

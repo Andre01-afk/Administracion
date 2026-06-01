@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import {
   Text,
@@ -11,124 +13,120 @@ import {
   useTheme,
 } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Toast from 'react-native-toast-message';
+import { donationService } from '../../services/apiService';
 import DonationCard from './components/DonationCard';
 import DonationDetails from './components/DonationDetails';
 import FilterSection from './components/FilterSection';
 import DashboardTabs from './components/DashboardTabs';
 import MyTaskCard from './components/MyTaskCard';
 
-// Import local images
-import food1 from '../../../assets/food1.jpg'; // Biryani
-import food2 from '../../../assets/food2.jpg'; // Chapati & Sabzi
-import food3 from '../../../assets/food3.webp'; // Sandwiches
-
-// Mock data
-const mockDonations = [
-  {
-    id: 1,
-    foodType: 'Chapati & Sabzi',
-    description: 'Freshly made chapatis with mixed vegetable curry. Packed and ready for pickup.',
-    quantity: '5-7',
-    area: 'Mumbai Central',
-    fullAddress: '123, ABC Building, Lamington Road, Mumbai Central, Mumbai - 400008',
-    pickupTime: 'Today, 7:00 PM - 8:00 PM',
-    donorName: 'Rahul S.',
-    donorPhone: '+91 98XXXXX123',
-    pickupInstructions: 'Ring the bell twice. Ask for Mrs. Sharma.',
-    meals: 10,
-    isVeg: true,
-    isPackaged: true,
-    foodImage: food2,
-    createdAt: new Date('2023-11-28T10:30:00'),
-    distance: 1.2, // in km
-  },
-  {
-    id: 2,
-    foodType: 'Biryani',
-    description: 'Homemade chicken biryani with raita. Can serve 8-10 people.',
-    quantity: '8-10',
-    area: 'Bandra West',
-    fullAddress: '45, Pali Hill, Bandra West, Mumbai - 400050',
-    pickupTime: 'Today, 8:00 PM - 9:00 PM',
-    donorName: 'Priya M.',
-    donorPhone: '+91 99XXXXX456',
-    pickupInstructions: 'Call 10 mins before arrival. Security will hand over the package.',
-    meals: 16,
-    isVeg: false,
-    isPackaged: false,
-    foodImage: food1,
-    createdAt: new Date('2023-11-28T11:45:00'),
-    distance: 2.5,
-  },
-  {
-    id: 3,
-    foodType: 'Sandwiches & Fruits',
-    description: 'Assorted sandwiches and fresh fruit boxes from a cafe. All vegetarian.',
-    quantity: '15',
-    area: 'Andheri East',
-    fullAddress: 'Cafe Fresh, Near Chakala Metro Station, Andheri East, Mumbai - 400069',
-    pickupTime: 'Tomorrow, 9:00 AM - 11:00 AM',
-    donorName: 'Cafe Fresh',
-    donorPhone: '+91 22XXXXXX12',
-    pickupInstructions: 'Ask for the manager and mention "Share Meal"',
-    meals: 15,
-    isVeg: true,
-    isPackaged: true,
-    foodImage: food3,
-    createdAt: new Date('2023-11-28T14:20:00'),
-    distance: 3.1,
-  },
-];
-
 const VolunteerScreen = () => {
   const theme = useTheme();
   const [activeTab, setActiveTab] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState('nearest');
-  const [foodType, setFoodType] = useState('all');
-  const [packaging, setPackaging] = useState('all');
+  const [sortBy, setSortBy] = useState('createdAt');
   const [selectedDonation, setSelectedDonation] = useState(null);
-  const [availableDonations, setAvailableDonations] = useState(mockDonations);
+  const [availableDonations, setAvailableDonations] = useState([]);
   const [acceptedDonations, setAcceptedDonations] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
-
-  // Menu states
+  const [loading, setLoading] = useState(false);
   const [sortMenuVisible, setSortMenuVisible] = useState(false);
 
-  // Filter and sort available donations
+  // Load donations from API
+  useEffect(() => {
+    loadDonations();
+  }, []);
+
+  const loadDonations = async () => {
+    try {
+      setLoading(true);
+      const data = await donationService.getDonations({ status: 'available' });
+      setAvailableDonations(data || []);
+    } catch (error) {
+      console.error('Error loading donations:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'No se pudieron cargar las donaciones',
+        duration: 2000,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Filter available donations by search
   const filteredDonations = availableDonations
     .filter(donation => {
       const matchesSearch = donation.area.toLowerCase().includes(searchQuery.toLowerCase()) ||
         donation.foodType.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesFoodType = foodType === 'all' ||
-        (foodType === 'veg' && donation.isVeg) ||
-        (foodType === 'non-veg' && !donation.isVeg);
-      const matchesPackaging = packaging === 'all' ||
-        (packaging === 'packaged' && donation.isPackaged) ||
-        (packaging === 'fresh' && !donation.isPackaged);
-
-      return matchesSearch && matchesFoodType && matchesPackaging;
+      return matchesSearch;
     })
     .sort((a, b) => {
       switch (sortBy) {
-        case 'nearest':
-          return a.distance - b.distance;
-        case 'earliest':
-          return new Date(a.pickupTime) - new Date(b.pickupTime);
-        case 'newest':
+        case 'createdAt':
           return new Date(b.createdAt) - new Date(a.createdAt);
+        case 'pickupTime':
+          return new Date(a.preferredPickupTime || 0) - new Date(b.preferredPickupTime || 0);
         default:
           return 0;
       }
     });
 
-  const handleAcceptDonation = (donation) => {
-    setAvailableDonations(prev => prev.filter(d => d.id !== donation.id));
-    setAcceptedDonations(prev => [...prev, { ...donation, status: 'accepted' }]);
+  const handleAcceptDonation = async (donation) => {
+    try {
+      setLoading(true);
+      await donationService.acceptDonation(donation.id);
+      
+      // Update local state
+      setAvailableDonations(prev => prev.filter(d => d.id !== donation.id));
+      setAcceptedDonations(prev => [...prev, { ...donation, status: 'accepted' }]);
+      
+      Toast.show({
+        type: 'success',
+        text1: 'Éxito',
+        text2: 'Donación aceptada correctamente',
+        duration: 2000,
+      });
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: error.message || 'No se pudo aceptar la donación',
+        duration: 2000,
+      });
+      console.error('Error accepting donation:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleCompleteDonation = (donationId) => {
-    setAcceptedDonations(prev => prev.filter(d => d.id !== donationId));
+  const handleCompleteDonation = async (donationId) => {
+    try {
+      setLoading(true);
+      await donationService.completeDonation(donationId);
+      
+      // Update local state
+      setAcceptedDonations(prev => prev.filter(d => d.id !== donationId));
+      
+      Toast.show({
+        type: 'success',
+        text1: 'Éxito',
+        text2: 'Donación completada correctamente',
+        duration: 2000,
+      });
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: error.message || 'No se pudo completar la donación',
+        duration: 2000,
+      });
+      console.error('Error completing donation:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -145,17 +143,17 @@ const VolunteerScreen = () => {
       />
 
       <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
-        {activeTab === 0 ? (
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#1ABC9C" />
+          </View>
+        ) : activeTab === 0 ? (
           <>
             <FilterSection
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
               sortBy={sortBy}
               setSortBy={setSortBy}
-              foodType={foodType}
-              setFoodType={setFoodType}
-              packaging={packaging}
-              setPackaging={setPackaging}
               showFilters={showFilters}
               setShowFilters={setShowFilters}
               sortMenuVisible={sortMenuVisible}
@@ -249,6 +247,15 @@ const styles = StyleSheet.create({
   contentContainer: {
     padding: 16,
     paddingBottom: 80,
+    maxWidth: 1000,
+    marginHorizontal: 'auto',
+    width: '100%',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 64,
   },
   emptyState: {
     alignItems: 'center',

@@ -82,9 +82,9 @@ const HomeScreen = ({ navigation }) => {
 
     const getGreeting = () => {
         const hour = new Date().getHours();
-        if (hour < 12) return 'Good Morning';
-        if (hour < 17) return 'Good Afternoon';
-        return 'Good Evening';
+        if (hour < 12) return 'Buenos Dias';
+        if (hour < 17) return 'Buenas Tardes';
+        return 'Buenas Noches';
     };
 
     const StatCard = ({ icon, label, value, color }) => (
@@ -140,9 +140,9 @@ const HomeScreen = ({ navigation }) => {
                     <View style={styles.headerOverlay}>
                         <View style={styles.headerContent}>
                             <Text style={styles.greeting}>{getGreeting()}!</Text>
-                            <Text style={styles.welcomeText}>Welcome to ShareMeal</Text>
+                            <Text style={styles.welcomeText}>Bienvenido a ShareMeal</Text>
                             <Text style={styles.tagline}>
-                                Together, we can fight hunger one meal at a time
+                                Juntos, podemos luchar contra el hambre un plato a la vez
                             </Text>
                         </View>
                     </View>
@@ -152,7 +152,7 @@ const HomeScreen = ({ navigation }) => {
                 <View style={styles.statsContainer}>
                     <StatCard
                         icon="restaurant"
-                        label="Meals Served"
+                        label="Comidas Servidas"
                         value={stats.totalMealsServed.toLocaleString()}
                         color="#3498DB"
                     />
@@ -177,7 +177,7 @@ const HomeScreen = ({ navigation }) => {
                         <Text style={styles.additionalStatValue}>
                             {stats.totalVolunteers}
                         </Text>
-                        <Text style={styles.additionalStatLabel}>Volunteers</Text>
+                        <Text style={styles.additionalStatLabel}>Voluntarios</Text>
                     </View>
                     <View style={styles.statDivider} />
                     <View style={styles.additionalStatItem}>
@@ -185,24 +185,24 @@ const HomeScreen = ({ navigation }) => {
                         <Text style={styles.additionalStatValue}>
                             {stats.communitiesServed}
                         </Text>
-                        <Text style={styles.additionalStatLabel}>Communities</Text>
+                        <Text style={styles.additionalStatLabel}>Comunidades</Text>
                     </View>
                 </View>
 
                 {/* Quick Actions */}
                 <View style={styles.quickActionsContainer}>
-                    <Text style={styles.sectionTitle}>Quick Actions</Text>
+                    <Text style={styles.sectionTitle}>Acciones Rápidas</Text>
                     <View style={styles.quickActionsRow}>
                         <QuickActionButton
                             icon="favorite"
-                            label="Donate Food"
+                            label="Donar Comida"
                             onPress={() => navigation.navigate('Donate')}
                             color="#1ABC9C"
                             image={food2}
                         />
                         <QuickActionButton
                             icon="volunteer-activism"
-                            label="Volunteer"
+                            label="Ser Voluntario"
                             onPress={() => navigation.navigate('Volunteer')}
                             color="#2980B9"
                             image={food1}

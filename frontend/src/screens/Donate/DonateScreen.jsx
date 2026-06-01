@@ -1,56 +1,37 @@
 import React, { useState, useEffect } from "react";
-import {View,Text,StyleSheet,FlatList,TouchableOpacity,Image,} from "react-native";
+import {View,Text,StyleSheet,FlatList,TouchableOpacity,Image,ActivityIndicator,Alert,} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
-const STORAGE_KEY = "DONATIONS_LIST";
-
-const DEFAULT_DONATIONS = [
-  {
-    id: "1",
-    foodType: "Sandwiches",
-    quantity: "5 boxes",
-    pickupAddress: "123 Street, City",
-    contact: "9876543210",
-    status: "Available",
-    image: require("../../../assets/sandwich.jpg"),
-  },
-  {
-    id: "2",
-    foodType: "Fruits",
-    quantity: "10 kg",
-    pickupAddress: "456 Avenue, City",
-    contact: "9876543211",
-    status: "Accepted",
-    image: require("../../../assets/fruits.jpg"),
-  },
-  {
-    id: "3",
-    foodType: "Pizza",
-    quantity: "3 boxes",
-    pickupAddress: "789 Road, City",
-    contact: "9876543212",
-    status: "Cancelled",
-    image: require("../../../assets/pizza.jpg"),
-  },
-];
+import Toast from "react-native-toast-message";
+import { useAuth } from "../../context/AuthContext";
+import { donationService } from "../../services/apiService";
+import { MaterialIcons } from "@expo/vector-icons";
+import { getFirstValidPhoto, isValidImageUrl } from "../../utils/imageUtils";
 
 const DonateScreen = ({ navigation }) => {
-  const [donations, setDonations] = useState(DEFAULT_DONATIONS);
+  const { user } = useAuth();
+  const [donations, setDonations] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [imageErrors, setImageErrors] = useState({});
 
   const loadDonations = async () => {
     try {
-      const stored = await AsyncStorage.getItem(STORAGE_KEY);
-
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        setDonations([...DEFAULT_DONATIONS, ...parsed]);
-      } else {
-        setDonations(DEFAULT_DONATIONS);
-      }
+      setLoading(true);
+      setError(null);
+      // Obtener solo las donaciones del usuario logueado
+      const data = await donationService.getDonations({ donorId: user?.id });
+      setDonations(data);
     } catch (error) {
       console.log("Error loading donations:", error);
-      setDonations(DEFAULT_DONATIONS);
+      setError(error.message);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'No se pudieron cargar las donaciones',
+        duration: 2000,
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -63,74 +44,108 @@ const DonateScreen = ({ navigation }) => {
   }, [navigation]);
 
   const handleCancel = async (id) => {
-    const updated = donations.map((item) =>
-      item.id === id ? { ...item, status: "Cancelled" } : item
-    );
-
-    setDonations(updated);
-
-    const updatedStored = updated.filter((item) => Number(item.id) > 3);
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedStored));
+    try {
+      // Esta función dependerá de si tienes endpoint para cancelar
+      // Por ahora solo mostramos un mensaje
+      Toast.show({
+        type: 'info',
+        text1: 'Próximamente',
+        text2: 'La funcionalidad de cancelación se agregará pronto',
+        duration: 2000,
+      });
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'No se pudo cancelar la donación',
+        duration: 2000,
+      });
+    }
   };
 
-  const renderCard = ({ item }) => (
-    <View style={styles.card}>
-      {item.photos && item.photos.length > 0 ? (
-        <Image source={{ uri: item.photos[0] }} style={styles.foodImage} />
-      ) : item.image ? (
-        <Image source={item.image} style={styles.foodImage} />
-      ) : (
-        <View style={styles.placeholder}>
-          <Text style={styles.placeholderText}>No Photo</Text>
+  const handleImageError = (donationId) => {
+    setImageErrors(prev => ({
+      ...prev,
+      [donationId]: true
+    }));
+  };
+
+  const renderCard = ({ item }) => {
+    const hasImageError = imageErrors[item.id];
+    const photoUrl = getFirstValidPhoto(item.photos);
+    const hasValidPhoto = photoUrl && isValidImageUrl(photoUrl) && !hasImageError;
+
+    return (
+      <View style={styles.card}>
+        <View style={styles.imageContainer}>
+          {hasValidPhoto ? (
+            <Image 
+              source={{ uri: photoUrl }} 
+              style={styles.foodImage}
+              resizeMode="cover"
+              onError={() => {
+                console.warn('Image failed to load in donate screen:', photoUrl?.substring(0, 50));
+                handleImageError(item.id);
+              }}
+            />
+          ) : (
+            <View style={styles.placeholder}>
+              <MaterialIcons name="fastfood" size={40} color="#9e9e9e" />
+              <Text style={styles.placeholderText}>Sin foto</Text>
+            </View>
+          )}
         </View>
-      )}
 
-      <View style={styles.cardBody}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.foodType}>{item.foodType}</Text>
+        <View style={styles.cardBody}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.foodType}>{item.foodType}</Text>
 
-          <View
-            style={[
-              styles.statusBadge,
-              item.status === "Available"
-                ? styles.availableBG
-                : item.status === "Accepted"
-                ? styles.acceptedBG
-                : styles.cancelledBG,
-            ]}
-          >
-            <Text style={styles.statusText}>{item.status}</Text>
+            <View
+              style={[
+                styles.statusBadge,
+                item.status === "available"
+                  ? styles.availableBG
+                  : item.status === "accepted"
+                  ? styles.acceptedBG
+                  : styles.cancelledBG,
+              ]}
+            >
+              <Text style={styles.statusText}>{item.status}</Text>
+            </View>
           </View>
-        </View>
 
-        <Text style={styles.info}>Quantity: {item.quantity}</Text>
-        <Text style={styles.info}>
-          Pickup: {item.address || item.pickupAddress}
-        </Text>
-
-        {item.pickupTime && (
-          <Text style={styles.info}>Available until: {item.pickupTime}</Text>
-        )}
-
-        <Text style={styles.info}>Contact: {item.contact}</Text>
-
-        {item.notes && (
-          <Text style={styles.notes} numberOfLines={2}>
-            Notes: {item.notes}
+          <Text style={styles.info}>Cantidad: {item.approxQuantity} {item.quantityUnit}</Text>
+          <Text style={styles.info}>
+            Zona: {item.area}
           </Text>
-        )}
+          <Text style={styles.info}>
+            Dirección: {item.pickupAddress}
+          </Text>
 
-        {item.status !== "Cancelled" && (
-          <TouchableOpacity
-            style={styles.cancelButton}
-            onPress={() => handleCancel(item.id)}
-          >
-            <Text style={styles.cancelButtonText}>Cancel Donation</Text>
-          </TouchableOpacity>
-        )}
+          {item.preferredPickupTime && (
+            <Text style={styles.info}>Recogida: {new Date(item.preferredPickupTime).toLocaleString()}</Text>
+          )}
+
+          {item.donor && (
+            <Text style={styles.info}>Donante: {item.donor.name}</Text>
+          )}
+
+          {item.contactNumber && (
+            <Text style={styles.info}>Contacto: {item.contactNumber}</Text>
+          )}
+
+          {item.status !== "cancelled" && (
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => handleCancel(item.id)}
+            >
+              <Text style={styles.cancelButtonText}>Cancelar Donación</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -159,7 +174,13 @@ const DonateScreen = ({ navigation }) => {
         data={donations}
         renderItem={renderCard}
         keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={{ paddingBottom: 30, paddingHorizontal: 15 }}
+        contentContainerStyle={{ 
+          paddingBottom: 30, 
+          paddingHorizontal: 15,
+          maxWidth: 1000,
+          marginHorizontal: 'auto',
+          width: '100%',
+        }}
         ListHeaderComponent={<Text style={styles.title}>Your Donations</Text>}
       />
     </SafeAreaView>
@@ -234,22 +255,30 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
   },
 
-  foodImage: {
+  imageContainer: {
     width: 110,
     height: 110,
     borderTopLeftRadius: 14,
     borderBottomLeftRadius: 14,
+    overflow: 'hidden',
+  },
+
+  foodImage: {
+    width: '100%',
+    height: '100%',
+    borderTopLeftRadius: 14,
+    borderBottomLeftRadius: 14,
   },
   placeholder: {
-    width: 110,
-    height: 110,
+    width: '100%',
+    height: '100%',
     backgroundColor: "#ecf0f1",
     alignItems: "center",
     justifyContent: "center",
     borderTopLeftRadius: 14,
     borderBottomLeftRadius: 14,
   },
-  placeholderText: { color: "#7f8c8d" },
+  placeholderText: { color: "#7f8c8d", marginTop: 8, fontSize: 12 },
 
   cardBody: { flex: 1, padding: 12 },
   cardHeader: {

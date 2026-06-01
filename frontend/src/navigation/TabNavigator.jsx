@@ -4,6 +4,7 @@ import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from 'react-native-paper';
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAuth } from '../context/AuthContext';
 
 // Screens
 import HomeScreen from '../screens/Home/HomeScreen';
@@ -16,6 +17,10 @@ const Tab = createBottomTabNavigator();
 const TabNavigator = () => {
     const theme = useTheme();
     const insets = useSafeAreaInsets();
+    const { user } = useAuth();
+
+    const isDonor = user?.role === 'donor';
+    const isVolunteer = user?.role === 'volunteer';
 
     return (
         <Tab.Navigator
@@ -50,26 +55,35 @@ const TabNavigator = () => {
                     ),
                 }}
             />
-            <Tab.Screen
-                name="Donate"
-                component={DonateScreen}
-                options={{
-                    tabBarLabel: 'Donate',
-                    tabBarIcon: ({ color, size }) => (
-                        <MaterialIcons name="favorite" size={size} color={color} />
-                    ),
-                }}
-            />
-            <Tab.Screen
-                name="Volunteer"
-                component={VolunteerScreen}
-                options={{
-                    tabBarLabel: 'Volunteer',
-                    tabBarIcon: ({ color, size }) => (
-                        <MaterialIcons name="volunteer-activism" size={size} color={color} />
-                    ),
-                }}
-            />
+            
+            {/* Tab solo para DONANTES */}
+            {isDonor && (
+                <Tab.Screen
+                    name="Donate"
+                    component={DonateScreen}
+                    options={{
+                        tabBarLabel: 'Mis Donaciones',
+                        tabBarIcon: ({ color, size }) => (
+                            <MaterialIcons name="favorite" size={size} color={color} />
+                        ),
+                    }}
+                />
+            )}
+
+            {/* Tab solo para VOLUNTARIOS */}
+            {isVolunteer && (
+                <Tab.Screen
+                    name="Volunteer"
+                    component={VolunteerScreen}
+                    options={{
+                        tabBarLabel: 'Disponibles',
+                        tabBarIcon: ({ color, size }) => (
+                            <MaterialIcons name="volunteer-activism" size={size} color={color} />
+                        ),
+                    }}
+                />
+            )}
+
             <Tab.Screen
                 name="Profile"
                 component={ProfileScreen}

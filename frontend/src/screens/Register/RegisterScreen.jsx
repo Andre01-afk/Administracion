@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert, KeyboardAvoidingView, 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { TextInput } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
+import Toast from 'react-native-toast-message';
 import { useAuth } from '../../context/AuthContext';
 
 const RegisterScreen = () => {
@@ -11,7 +12,7 @@ const RegisterScreen = () => {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [phone, setPhone] = useState('');
-    const [location, setLocation] = useState('');
+    const [role, setRole] = useState(null); 
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -19,34 +20,64 @@ const RegisterScreen = () => {
     const navigation = useNavigation();
 
     const handleRegister = async () => {
-        if (!name.trim() || !email.trim() || !password.trim()) {
-            Alert.alert('Error', 'Please fill in all required fields');
+        if (!name.trim() || !email.trim() || !password.trim() || !role) {
+            Toast.show({
+                type: 'error',
+                text1: 'Error',
+                text2: 'Por favor completa todos los campos requeridos',
+                duration: 2000,
+            });
             return;
         }
 
         if (password !== confirmPassword) {
-            Alert.alert('Error', 'Passwords do not match');
+            Toast.show({
+                type: 'error',
+                text1: 'Error',
+                text2: 'Las contraseñas no coinciden',
+                duration: 2000,
+            });
             return;
         }
 
         if (password.length < 6) {
-            Alert.alert('Error', 'Password must be at least 6 characters');
+            Toast.show({
+                type: 'error',
+                text1: 'Error',
+                text2: 'La contraseña debe tener al menos 6 caracteres',
+                duration: 2000,
+            });
             return;
         }
 
         setLoading(true);
-        const result = await register(name, email, password, phone, location);
-        setLoading(false);
-
-        if (result.success) {
-            Alert.alert('Success', 'Account created successfully!', [
-                {
-                    text: 'OK',
-                    onPress: () => navigation.navigate('Main'),
-                },
-            ]);
-        } else {
-            Alert.alert('Registration Failed', result.error || 'Unable to create account');
+        try {
+            const result = await register(name, email, password, phone, role);
+            if (result.success) {
+                Toast.show({
+                    type: 'success',
+                    text1: 'Registro exitoso',
+                    text2: 'Tu cuenta ha sido creada correctamente',
+                    duration: 2000,
+                });
+                // La navegación es automática porque isAuthenticated cambió en App.js
+            } else {
+                Toast.show({
+                    type: 'error',
+                    text1: 'Error de Registro',
+                    text2: result.error || 'No se pudo crear la cuenta',
+                    duration: 2000,
+                });
+            }
+        } catch (error) {
+            Toast.show({
+                type: 'error',
+                text1: 'Error',
+                text2: error.message || 'Ocurrió un error durante el registro',
+                duration: 2000,
+            });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -101,15 +132,40 @@ const RegisterScreen = () => {
                                 theme={{ colors: { primary: '#1ABC9C' } }}
                             />
 
-                            <TextInput
-                                label="Location"
-                                value={location}
-                                onChangeText={setLocation}
-                                mode="outlined"
-                                autoCapitalize="words"
-                                style={styles.input}
-                                theme={{ colors: { primary: '#1ABC9C' } }}
-                            />
+                            <View style={styles.roleSection}>
+                                <Text style={styles.roleLabel}>¿Cuál es tu rol? *</Text>
+                                <View style={styles.roleButtons}>
+                                    <TouchableOpacity 
+                                        style={[
+                                            styles.roleButton,
+                                            role === 'donor' && styles.roleButtonActive
+                                        ]}
+                                        onPress={() => setRole('donor')}
+                                    >
+                                        <Text style={[
+                                            styles.roleButtonText,
+                                            role === 'donor' && styles.roleButtonTextActive
+                                        ]}>
+                                            🍽️ Donante
+                                        </Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity 
+                                        style={[
+                                            styles.roleButton,
+                                            role === 'volunteer' && styles.roleButtonActive
+                                        ]}
+                                        onPress={() => setRole('volunteer')}
+                                    >
+                                        <Text style={[
+                                            styles.roleButtonText,
+                                            role === 'volunteer' && styles.roleButtonTextActive
+                                        ]}>
+                                            🤝 Voluntario
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
 
                             <TextInput
                                 label="Password *"
@@ -216,6 +272,41 @@ const styles = StyleSheet.create({
     input: {
         marginBottom: 16,
         backgroundColor: '#fff',
+    },
+    roleSection: {
+        marginBottom: 16,
+    },
+    roleLabel: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#333',
+        marginBottom: 12,
+    },
+    roleButtons: {
+        flexDirection: 'row',
+        gap: 12,
+    },
+    roleButton: {
+        flex: 1,
+        paddingVertical: 14,
+        paddingHorizontal: 12,
+        borderRadius: 8,
+        borderWidth: 2,
+        borderColor: '#ddd',
+        alignItems: 'center',
+        backgroundColor: '#f8f9fa',
+    },
+    roleButtonActive: {
+        borderColor: '#1ABC9C',
+        backgroundColor: '#e8f8f6',
+    },
+    roleButtonText: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#666',
+    },
+    roleButtonTextActive: {
+        color: '#1ABC9C',
     },
     registerButton: {
         backgroundColor: '#1ABC9C',

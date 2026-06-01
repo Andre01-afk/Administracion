@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   ScrollView,
@@ -20,27 +20,55 @@ import {
   Surface
 } from 'react-native-paper';
 import { MaterialIcons } from '@expo/vector-icons';
+import { getFirstValidPhoto, isValidImageUrl } from '../../../utils/imageUtils';
 
 const DonationDetails = ({ visible, onDismiss, donation, onAccept }) => {
   const theme = useTheme();
+  const [imageError, setImageError] = useState(false);
 
   if (!donation) return null;
 
+  // Destructure datos reales del backend
   const {
+    id,
     foodType,
-    description,
-    quantity,
+    approxQuantity,
+    quantityUnit = 'portions',
     area,
-    fullAddress,
-    pickupTime,
-    donorName,
-    donorPhone,
-    pickupInstructions,
-    meals,
-    foodImage,
-    isVeg,
-    isPackaged
+    pickupAddress,
+    preferredPickupTime,
+    contactNumber,
+    photos,
+    donor,
+    status,
   } = donation;
+
+  // Calcular fecha/hora
+  const formatDateTime = (dateString) => {
+    if (!dateString) return 'No especificada';
+    const date = new Date(dateString);
+    return date.toLocaleString('es-ES', { 
+      weekday: 'long',
+      month: 'long', 
+      day: 'numeric', 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+  };
+
+  const photoUrl = getFirstValidPhoto(photos);
+  const hasValidPhoto = photoUrl && isValidImageUrl(photoUrl) && !imageError;
+
+  const handleDirections = () => {
+    const url = `https://www.google.com/maps/search/${encodeURIComponent(pickupAddress)}`;
+    Linking.openURL(url).catch(err => console.error('Error opening maps:', err));
+  };
+
+  const handleCall = () => {
+    if (contactNumber) {
+      Linking.openURL(`tel:${contactNumber}`).catch(err => console.error('Error calling:', err));
+    }
+  };
 
   return (
     <Modal
@@ -50,17 +78,21 @@ const DonationDetails = ({ visible, onDismiss, donation, onAccept }) => {
     >
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Donation Details</Text>
+          <Text style={styles.headerTitle}>Detalles de Donación</Text>
           <IconButton icon="close" onPress={onDismiss} />
         </View>
 
         <ScrollView style={styles.content}>
           <View style={styles.imageContainer}>
-            {foodImage ? (
+            {hasValidPhoto ? (
               <Image
-                source={typeof foodImage === 'string' ? { uri: foodImage } : foodImage}
+                source={{ uri: photoUrl }}
                 style={styles.image}
                 resizeMode="cover"
+                onError={() => {
+                  console.warn('Image failed to load in details:', photoUrl?.substring(0, 50));
+                  setImageError(true);
+                }}
               />
             ) : (
               <View style={styles.placeholderImage}>
@@ -72,83 +104,69 @@ const DonationDetails = ({ visible, onDismiss, donation, onAccept }) => {
           <View style={styles.detailsContainer}>
             <Text style={styles.title}>{foodType}</Text>
 
-            <Text style={styles.description}>
-              {description || 'No description provided.'}
-            </Text>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Cantidad</Text>
+              <Text style={styles.sectionContent}>{approxQuantity} {quantityUnit}</Text>
+            </View>
 
             <View style={styles.chipContainer}>
-              <Chip
-                mode="outlined"
-                style={[styles.chip, { borderColor: isVeg ? '#4CAF50' : '#F44336' }]}
-                textStyle={{ color: isVeg ? '#4CAF50' : '#F44336' }}
-              >
-                {isVeg ? 'Veg' : 'Non-Veg'}
-              </Chip>
-              <Chip
-                mode="outlined"
-                style={[styles.chip, { borderColor: '#2980B9' }]}
-                textStyle={{ color: '#2980B9' }}
-              >
-                {isPackaged ? 'Packaged' : 'Fresh Food'}
-              </Chip>
               <Chip mode="outlined" style={styles.chip}>
-                {quantity} servings
+                {status === 'available' ? '✓ Disponible' : status}
               </Chip>
             </View>
 
             <Divider style={styles.divider} />
 
-            <Text style={styles.sectionTitle}>PICKUP DETAILS</Text>
+            <Text style={styles.sectionTitle}>DETALLES DE RECOGIDA</Text>
 
             <View style={styles.infoRow}>
-              <MaterialIcons name="location-on" size={20} color="#666" />
-              <Text style={styles.infoText}>{fullAddress || area}</Text>
+              <MaterialIcons name="location-on" size={20} color="#1ABC9C" />
+              <Text style={styles.infoText}>{pickupAddress}</Text>
             </View>
 
             <View style={styles.infoRow}>
-              <MaterialIcons name="access-time" size={20} color="#666" />
-              <Text style={styles.infoText}>{pickupTime}</Text>
+              <MaterialIcons name="access-time" size={20} color="#1ABC9C" />
+              <Text style={styles.infoText}>{formatDateTime(preferredPickupTime)}</Text>
             </View>
 
-            {donorName && (
-              <View style={styles.infoRow}>
-                <Avatar.Text
-                  size={24}
-                  label={donorName.split(' ').map(n => n[0]).join('')}
-                  style={styles.avatar}
-                />
-                <Text style={styles.infoText}>{donorName}</Text>
-              </View>
+            {donor && (
+              <>
+                <View style={styles.infoRow}>
+                  <Avatar.Text
+                    size={24}
+                    label={donor.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                    style={styles.avatar}
+                  />
+                  <Text style={styles.infoText}>{donor.name}</Text>
+                </View>
+
+                {donor.phone && (
+                  <View style={styles.infoRow}>
+                    <MaterialIcons name="phone" size={20} color="#1ABC9C" />
+                    <Text style={styles.infoText}>{donor.phone}</Text>
+                  </View>
+                )}
+              </>
             )}
 
-            {donorPhone && (
+            {contactNumber && (
               <View style={styles.infoRow}>
-                <MaterialIcons name="phone" size={20} color="#666" />
-                <Text style={styles.infoText}>{donorPhone}</Text>
-              </View>
-            )}
-
-            {pickupInstructions && (
-              <View style={styles.instructionSection}>
-                <Text style={styles.sectionTitle}>PICKUP INSTRUCTIONS</Text>
-                <Text style={styles.instructionText}>{pickupInstructions}</Text>
+                <MaterialIcons name="phone" size={20} color="#1ABC9C" />
+                <Text style={styles.infoText}>Contacto: {contactNumber}</Text>
               </View>
             )}
 
             <View style={styles.mealsEstimate}>
               <Text style={styles.mealsText}>
-                Estimated meals: <Text style={styles.mealsValue}>{meals}</Text>
+                Ubicación: <Text style={styles.mealsValue}>{area}</Text>
               </Text>
 
               <Button
                 mode="outlined"
                 icon="directions"
-                onPress={() => {
-                  const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(fullAddress || area)}`;
-                  Linking.openURL(mapsUrl);
-                }}
+                onPress={handleDirections}
               >
-                Directions
+                Direcciones
               </Button>
             </View>
           </View>
@@ -164,7 +182,7 @@ const DonationDetails = ({ visible, onDismiss, donation, onAccept }) => {
             style={styles.acceptButton}
             contentStyle={{ height: 48 }}
           >
-            Accept Donation
+            Aceptar Donación
           </Button>
         </View>
       </View>

@@ -8,22 +8,28 @@ import {
   ScrollView,
   ImageBackground,
   TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+  Image,
 } from "react-native";
 import { BlurView } from "expo-blur";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
-const STORAGE_KEY = "DONATIONS_LIST";
+import Toast from "react-native-toast-message";
+import { donationService, uploadService } from "../../services/apiService";
 
 export default function CreateDonationForm({ navigation }) {
   const [foodType, setFoodType] = useState("");
   const [quantity, setQuantity] = useState("");
+  const [quantityUnit, setQuantityUnit] = useState("portions");
   const [photos, setPhotos] = useState([]);
-  const [address, setAddress] = useState("");
-  const [contact, setContact] = useState("");
-  const [pickupTime, setPickupTime] = useState("");
-  const [notes, setNotes] = useState("");
+  const [uploadedPhotos, setUploadedPhotos] = useState([]);
+  const [area, setArea] = useState("");
+  const [pickupAddress, setPickupAddress] = useState("");
+  const [contactNumber, setContactNumber] = useState("");
+  const [preferredPickupTime, setPreferredPickupTime] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const pickImages = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -33,38 +39,101 @@ export default function CreateDonationForm({ navigation }) {
     });
 
     if (!result.canceled) {
-      setPhotos(result.assets.map((asset) => asset.uri));
+      try {
+        setUploading(true);
+        // Preparar archivos para subida
+        const filesToUpload = result.assets.map(asset => ({
+          uri: asset.uri,
+          type: 'image/jpeg',
+          name: asset.fileName || `image-${Date.now()}.jpg`
+        }));
+
+        // Subir imágenes al servidor
+        const uploadResponse = await uploadService.uploadImages(filesToUpload);
+        
+        if (uploadResponse.success && uploadResponse.images) {
+          // Guardar las URLs de las imágenes subidas
+          const imageUrls = uploadResponse.images.map(img => img.url);
+          setUploadedPhotos(prev => [...prev, ...imageUrls]);
+          setPhotos(prev => [...prev, ...result.assets]);
+
+          Toast.show({
+            type: 'success',
+            text1: 'Éxito',
+            text2: `${uploadResponse.images.length} imagen(es) subida(s)`,
+            duration: 2000,
+          });
+        }
+      } catch (error) {
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: error.message || 'Error al subir imágenes',
+          duration: 2000,
+        });
+        console.error('Error uploading images:', error);
+      } finally {
+        setUploading(false);
+      }
     }
   };
 
+  const removePhoto = (index) => {
+    setPhotos(prev => prev.filter((_, i) => i !== index));
+    setUploadedPhotos(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleCreateDonation = async () => {
-    if (!foodType || !quantity || !address || !contact) {
-      alert("Please fill Food Type, Quantity, Address and Contact.");
+    if (!foodType || !quantity || !pickupAddress || !contactNumber || !area) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Por favor completa todos los campos requeridos',
+        duration: 2000,
+      });
       return;
     }
 
-    const newDonation = {
-      id: Date.now().toString(),
-      foodType,
-      quantity,
-      address,
-      contact,
-      pickupTime,
-      notes,
-      photos,
-      status: "Available",
-    };
-
+    setLoading(true);
     try {
-      const existing = await AsyncStorage.getItem(STORAGE_KEY);
-      const parsed = existing ? JSON.parse(existing) : [];
-      const updated = [newDonation, ...parsed];
+      // Validar y convertir fecha
+      let pickupDateTime = null;
+      if (preferredPickupTime && preferredPickupTime.trim()) {
+        const parsedDate = new Date(preferredPickupTime);
+        if (!isNaN(parsedDate.getTime())) {
+          pickupDateTime = parsedDate.toISOString();
+        }
+      }
 
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      // Usar URLs de imágenes ya subidas al servidor
+      await donationService.createDonation({
+        foodType,
+        approxQuantity: parseInt(quantity),
+        quantityUnit,
+        area,
+        pickupAddress,
+        contactNumber,
+        preferredPickupTime: pickupDateTime,
+        photos: uploadedPhotos.map(url => ({ url })), // URLs del servidor
+      });
 
+      Toast.show({
+        type: 'success',
+        text1: 'Éxito',
+        text2: 'Donación creada exitosamente',
+        duration: 2000,
+      });
       navigation.goBack();
     } catch (error) {
-      console.log("Error saving donation:", error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: error.message || 'No se pudo crear la donación',
+        duration: 2000,
+      });
+      console.log("Error creating donation:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -95,73 +164,121 @@ export default function CreateDonationForm({ navigation }) {
           />
 
           {/* Quantity */}
-          <Text style={styles.label}>Quantity</Text>
+          <Text style={styles.label}>Cantidad</Text>
           <TextInput
-            placeholder="E.g., 5 plates / 2 boxes"
+            placeholder="E.g., 5"
             placeholderTextColor="#eee"
             style={styles.underlineInput}
+            keyboardType="numeric"
             value={quantity}
             onChangeText={setQuantity}
           />
 
-          {/* Photos */}
-          <Text style={styles.label}>Food Photos</Text>
-          <TouchableOpacity style={styles.photoButton} onPress={pickImages}>
-            <Text style={styles.photoButtonText}>Upload Photos</Text>
-          </TouchableOpacity>
-          {photos.length > 0 && (
-            <Text style={styles.photoCount}>
-              {photos.length} photo(s) selected
-            </Text>
-          )}
-
-          {/* Pickup Details */}
-          <Text style={styles.label}>Pickup Address</Text>
+          <Text style={styles.label}>Unidad</Text>
           <TextInput
-            placeholder="Address"
+            placeholder="E.g., portions, kg, boxes"
             placeholderTextColor="#eee"
             style={styles.underlineInput}
-            value={address}
-            onChangeText={setAddress}
+            value={quantityUnit}
+            onChangeText={setQuantityUnit}
           />
 
-          <Text style={styles.label}>Contact Number</Text>
+          {/* Photos */}
+          <Text style={styles.label}>Fotos del Alimento</Text>
+          <TouchableOpacity 
+            style={[styles.photoButton, uploading && styles.photoButtonDisabled]} 
+            onPress={pickImages}
+            disabled={uploading}
+          >
+            {uploading ? (
+              <>
+                <ActivityIndicator size="small" color="#fff" />
+                <Text style={styles.photoButtonText}>Subiendo...</Text>
+              </>
+            ) : (
+              <Text style={styles.photoButtonText}>Cargar Fotos</Text>
+            )}
+          </TouchableOpacity>
+          
+          {photos.length > 0 && (
+            <View style={styles.photosContainer}>
+              <Text style={styles.photoCount}>
+                {photos.length} foto(s) subida(s)
+              </Text>
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false}
+                style={styles.photosScroll}
+              >
+                {photos.map((photo, index) => (
+                  <View key={index} style={styles.photoThumbnail}>
+                    <Image 
+                      source={{ uri: photo.uri }} 
+                      style={styles.photoImage}
+                    />
+                    <TouchableOpacity 
+                      style={styles.photoDeleteButton}
+                      onPress={() => removePhoto(index)}
+                    >
+                      <Ionicons name="close" size={20} color="#fff" />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </ScrollView>
+            </View>
+          )}
+
+          {/* Area */}
+          <Text style={styles.label}>Zona / Área</Text>
           <TextInput
-            placeholder="Contact Number"
+            placeholder="E.g., Centro, Bandra"
+            placeholderTextColor="#eee"
+            style={styles.underlineInput}
+            value={area}
+            onChangeText={setArea}
+          />
+
+          {/* Pickup Details */}
+          <Text style={styles.label}>Dirección de Recogida</Text>
+          <TextInput
+            placeholder="Dirección completa"
+            placeholderTextColor="#eee"
+            style={styles.underlineInput}
+            value={pickupAddress}
+            onChangeText={setPickupAddress}
+          />
+
+          <Text style={styles.label}>Número de Contacto</Text>
+          <TextInput
+            placeholder="Número de contacto"
             placeholderTextColor="#eee"
             style={styles.underlineInput}
             keyboardType="phone-pad"
-            value={contact}
-            onChangeText={setContact}
+            value={contactNumber}
+            onChangeText={setContactNumber}
           />
 
           <Text style={styles.label}>
-            Available for pickup until (e.g., 5:00 PM)
+            Hora preferida de recogida (YYYY-MM-DD HH:mm)
           </Text>
           <TextInput
-            placeholder="E.g., 5:00 PM"
+            placeholder="E.g., 2026-05-27 17:00"
             placeholderTextColor="#eee"
             style={styles.underlineInput}
-            value={pickupTime}
-            onChangeText={setPickupTime}
-          />
-
-          {/* Notes */}
-          <Text style={styles.label}>Additional Notes</Text>
-          <TextInput
-            placeholder="E.g., Allergies, special instructions..."
-            placeholderTextColor="#eee"
-            style={[styles.underlineInput, { height: 90 }]}
-            multiline
-            value={notes}
-            onChangeText={setNotes}
+            value={preferredPickupTime}
+            onChangeText={setPreferredPickupTime}
           />
 
           <TouchableOpacity
-            style={styles.button}
+            style={[styles.button, loading && styles.buttonDisabled]}
             onPress={handleCreateDonation}
+            disabled={loading}
           >
-            <Text style={styles.buttonText}>Create Donation</Text>
+            {loading ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Crear Donación</Text>
+            )}
           </TouchableOpacity>
         </BlurView>
       </ScrollView>
@@ -236,10 +353,47 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     alignItems: "center",
   },
+  buttonDisabled: {
+    opacity: 0.6,
+  },
   buttonText: {
     color: "#111111ff",
     fontWeight: "600",
     fontSize: 16,
+  },
+
+  photosContainer: {
+    marginVertical: 10,
+  },
+  photosScroll: {
+    marginTop: 8,
+  },
+  photoThumbnail: {
+    position: 'relative',
+    marginRight: 10,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  photoImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+  },
+  photoDeleteButton: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: '#E74C3C',
+    borderRadius: 50,
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  photoButtonDisabled: {
+    opacity: 0.6,
   },
 });
 
