@@ -107,7 +107,7 @@ const DonationCard = ({ donation, onAccept, onPress, isAccepted = false }) => {
           labelStyle={styles.buttonLabel}
           contentStyle={styles.buttonContent}
         >
-          {isAccepted ? 'Accepted' : 'Accept Donation'}
+          {isAccepted ? 'Aceptado' : 'Aceptar Donación'}
         </Button>
       </Card.Actions>
     </Card>

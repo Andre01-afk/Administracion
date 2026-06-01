@@ -8,14 +8,14 @@ const DashboardTabs = ({ activeTab, setActiveTab, tasksCount }) => {
                 style={[styles.tab, activeTab === 0 && styles.activeTab]}
                 onPress={() => setActiveTab(0)}
             >
-                <Text style={[styles.tabText, activeTab === 0 && styles.activeTabText]}>Available</Text>
+                <Text style={[styles.tabText, activeTab === 0 && styles.activeTabText]}>Disponibles</Text>
             </TouchableOpacity>
             <TouchableOpacity
                 style={[styles.tab, activeTab === 1 && styles.activeTab]}
                 onPress={() => setActiveTab(1)}
             >
                 <Text style={[styles.tabText, activeTab === 1 && styles.activeTabText]}>
-                    My Tasks {tasksCount > 0 && `(${tasksCount})`}
+                    Mis Tareas {tasksCount > 0 && `(${tasksCount})`}
                 </Text>
             </TouchableOpacity>
         </View>

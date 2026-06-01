@@ -49,7 +49,7 @@ const TabNavigator = () => {
                 name="Home"
                 component={HomeScreen}
                 options={{
-                    tabBarLabel: 'Home',
+                    tabBarLabel: 'Inicio',
                     tabBarIcon: ({ color, size }) => (
                         <MaterialIcons name="home" size={size} color={color} />
                     ),
@@ -88,7 +88,7 @@ const TabNavigator = () => {
                 name="Profile"
                 component={ProfileScreen}
                 options={{
-                    tabBarLabel: 'Profile',
+                    tabBarLabel: 'Perfil',
                     tabBarIcon: ({ color, size }) => (
                         <MaterialIcons name="person" size={size} color={color} />
                     ),

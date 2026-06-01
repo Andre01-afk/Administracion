@@ -133,7 +133,7 @@ const VolunteerScreen = () => {
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>ShareMeal</Text>
-        <Text style={styles.headerSubtitle}>Volunteer Dashboard</Text>
+        <Text style={styles.headerSubtitle}>Dashboard Voluntario</Text>
       </View>
 
       <DashboardTabs
@@ -171,8 +171,8 @@ const VolunteerScreen = () => {
               ))
             ) : (
               <View style={styles.emptyState}>
-                <Text style={styles.emptyStateText}>No donations found</Text>
-                <Text style={styles.emptyStateSubtext}>Try adjusting your filters</Text>
+                <Text style={styles.emptyStateText}>No se han encontrado donaciones</Text>
+                <Text style={styles.emptyStateSubtext}>Intenta ajustar tus filtros</Text>
               </View>
             )}
           </>
@@ -188,14 +188,14 @@ const VolunteerScreen = () => {
               ))
             ) : (
               <View style={styles.emptyState}>
-                <Text style={styles.emptyStateText}>No active tasks</Text>
-                <Text style={styles.emptyStateSubtext}>Accept donations to see them here</Text>
+                <Text style={styles.emptyStateText}>No tienes tareas activas</Text>
+                <Text style={styles.emptyStateSubtext}>Acepta donaciones para verlas aquí</Text>
                 <Button
                   mode="contained"
                   onPress={() => setActiveTab(0)}
                   style={{ marginTop: 16 }}
                 >
-                  Find Donations
+                  Encontrar Donaciones
                 </Button>
               </View>
             )}

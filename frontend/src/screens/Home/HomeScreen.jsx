@@ -40,24 +40,24 @@ const HomeScreen = ({ navigation }) => {
         {
             id: 1,
             step: '1',
-            title: 'Donate Food',
-            description: 'Share your excess food with those in need',
+            title: 'Donar alimentos',
+            description: 'Comparte la comida que te sobre con quienes la necesitan.',
             icon: 'restaurant',
             image: food2,
         },
         {
             id: 2,
             step: '2',
-            title: 'Volunteers Pick Up',
-            description: 'Our volunteers collect and verify the food',
+            title: 'Voluntarios Recogen',
+            description: 'Nuestros voluntarios recolectan y verifican la comida.',
             icon: 'local-shipping',
             image: form2,
         },
         {
             id: 3,
             step: '3',
-            title: 'Deliver to Community',
-            description: 'Food is safely delivered to those who need it',
+            title: 'Entregar a la Comunidad',
+            description: 'La comida es entregada de manera segura a quienes la necesitan.',
             icon: 'people',
             image: form3,
         },
@@ -66,15 +66,15 @@ const HomeScreen = ({ navigation }) => {
     const impactStories = [
         {
             id: 1,
-            title: 'Community Kitchen Initiative',
-            description: 'Serving 500+ meals daily to families in need',
+            title: 'Iniciativa de Cocinas Comunitarias',
+            description: 'Servimos más de 500 comidas al día a familias necesitadas en Mumbai Central.',
             image: communityImage,
             location: 'Mumbai Central',
         },
         {
             id: 2,
-            title: 'School Meal Program',
-            description: 'Providing nutritious meals to 200+ children',
+            title: 'Programa de Comidas Escolares',
+            description: 'Proporcionando comidas nutritivas a más de 200 niños',
             image: food3,
             location: 'Bandra West',
         },
@@ -158,13 +158,13 @@ const HomeScreen = ({ navigation }) => {
                     />
                     <StatCard
                         icon="favorite"
-                        label="Active Donations"
+                        label="Donaciones Activas"
                         value={stats.activeDonations}
                         color="#E74C3C"
                     />
                     <StatCard
                         icon="check-circle"
-                        label="Completed"
+                        label="Completadas"
                         value={stats.completedDonations}
                         color="#27AE60"
                     />
@@ -212,9 +212,9 @@ const HomeScreen = ({ navigation }) => {
 
                 {/* How It Works Section */}
                 <View style={styles.howItWorksContainer}>
-                    <Text style={styles.sectionTitle}>How It Works</Text>
+                    <Text style={styles.sectionTitle}>Como Funciona</Text>
                     <Text style={styles.sectionSubtitle}>
-                        Join us in making a difference in three simple steps
+                        Únete a nosotros para marcar la diferencia en tres sencillos pasos
                     </Text>
                     {howItWorks.map((item, index) => (
                         <Card
@@ -257,9 +257,9 @@ const HomeScreen = ({ navigation }) => {
 
                 {/* Community Impact Section */}
                 <View style={styles.impactStoriesContainer}>
-                    <Text style={styles.sectionTitle}>Community Impact</Text>
+                    <Text style={styles.sectionTitle}>Impacto en la comunidad</Text>
                     <Text style={styles.sectionSubtitle}>
-                        See how your donations are making a real difference
+                        Descubre cómo tus donaciones están marcando una diferencia real
                     </Text>
                     {impactStories.map((story) => (
                         <Card
@@ -314,28 +314,28 @@ const HomeScreen = ({ navigation }) => {
                                     style={styles.impactIcon}
                                 />
                                 <Text style={styles.impactTitle}>
-                                    Our Mission
+                                    Nuestra Misión
                                 </Text>
                                 <Text style={styles.impactText}>
-                                    ShareMeal connects food donors with volunteers to reduce food waste
-                                    and fight hunger. Every meal shared brings us closer to a world where
-                                    no one goes to bed hungry. Join our community of compassionate
-                                    individuals making a real difference.
+                                    ShareMeal conecta a donantes de comida con voluntarios para reducir el desperdicio de alimentos
+                                    y luchar contra el hambre. Cada comida compartida nos acerca a un mundo donde
+                                    nadie vaya a la cama con hambre. Únete a nuestra comunidad de personas compasivas que marcan 
+                                    una verdadera diferencia.
                                 </Text>
                                 <View style={styles.missionStats}>
                                     <View style={styles.missionStatItem}>
                                         <Text style={styles.missionStatValue}>100%</Text>
-                                        <Text style={styles.missionStatLabel}>Transparent</Text>
+                                        <Text style={styles.missionStatLabel}>Transparente</Text>
                                     </View>
                                     <View style={styles.missionStatDivider} />
                                     <View style={styles.missionStatItem}>
                                         <Text style={styles.missionStatValue}>24/7</Text>
-                                        <Text style={styles.missionStatLabel}>Available</Text>
+                                        <Text style={styles.missionStatLabel}>Disponible</Text>
                                     </View>
                                     <View style={styles.missionStatDivider} />
                                     <View style={styles.missionStatItem}>
-                                        <Text style={styles.missionStatValue}>Free</Text>
-                                        <Text style={styles.missionStatLabel}>Service</Text>
+                                        <Text style={styles.missionStatValue}>Gratis</Text>
+                                        <Text style={styles.missionStatLabel}>Servicio</Text>
                                     </View>
                                 </View>
                             </Card.Content>

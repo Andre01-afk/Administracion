@@ -151,10 +151,10 @@ export default function CreateDonationForm({ navigation }) {
 
       <ScrollView contentContainerStyle={styles.container}>
         <BlurView intensity={50} tint="light" style={styles.formCard}>
-          <Text style={styles.heading}>Create Donation</Text>
+          <Text style={styles.heading}>Crear Donación</Text>
 
           {/* Food Type */}
-          <Text style={styles.label}>Food Type</Text>
+          <Text style={styles.label}>Tipo de Comida</Text>
           <TextInput
             placeholder="E.g., Rice, Sandwiches"
             placeholderTextColor="#eee"

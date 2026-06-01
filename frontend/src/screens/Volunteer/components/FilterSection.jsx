@@ -20,7 +20,7 @@ const FilterSection = ({
         <View style={styles.filterSection}>
             <View style={styles.searchRow}>
                 <Searchbar
-                    placeholder="Search area or food..."
+                    placeholder="Buscar zona o comida..."
                     onChangeText={setSearchQuery}
                     value={searchQuery}
                     style={styles.searchBar}
@@ -36,13 +36,13 @@ const FilterSection = ({
                             style={styles.sortButton}
                             icon="sort"
                         >
-                            Sort
+                            Ordenar
                         </Button>
                     }
                 >
-                    <Menu.Item onPress={() => { setSortBy('nearest'); setSortMenuVisible(false); }} title="Nearest" />
-                    <Menu.Item onPress={() => { setSortBy('earliest'); setSortMenuVisible(false); }} title="Earliest Pickup" />
-                    <Menu.Item onPress={() => { setSortBy('newest'); setSortMenuVisible(false); }} title="Newest" />
+                    <Menu.Item onPress={() => { setSortBy('nearest'); setSortMenuVisible(false); }} title="Más Cercano" />
+                    <Menu.Item onPress={() => { setSortBy('earliest'); setSortMenuVisible(false); }} title="Primer Recogida" />
+                    <Menu.Item onPress={() => { setSortBy('newest'); setSortMenuVisible(false); }} title="Más Nuevo" />
                 </Menu>
             </View>
 
@@ -52,12 +52,12 @@ const FilterSection = ({
                 icon={showFilters ? "chevron-up" : "filter-variant"}
                 style={styles.filterToggle}
             >
-                {showFilters ? "Hide Filters" : "Show Filters"}
+                {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
             </Button>
 
             {showFilters && (
                 <View style={styles.advancedFilters}>
-                    <Text style={styles.filterLabel}>Food Type:</Text>
+                    <Text style={styles.filterLabel}>Tipo de comida:</Text>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
                         <Chip
                             selected={foodType === 'all'}

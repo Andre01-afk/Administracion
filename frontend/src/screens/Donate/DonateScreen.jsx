@@ -152,12 +152,12 @@ const DonateScreen = ({ navigation }) => {
       
       <View style={styles.header}>
         <Text style={styles.headerTitle}>ShareMeal</Text>
-        <Text style={styles.headerSubtitle}>Donation Dashboard</Text>
+        <Text style={styles.headerSubtitle}>Dashboard Donante</Text>
       </View>
 
       <View style={styles.buttonWrapper}>
         <Text style={styles.tagline}>
-          Share extra food — make someone's day brighter!
+          Comparte la comida que te sobre: ¡alegra el día a alguien!
         </Text>
 
         <TouchableOpacity
@@ -165,7 +165,7 @@ const DonateScreen = ({ navigation }) => {
           activeOpacity={0.7}
         >
           <View style={styles.glassButton}>
-            <Text style={styles.glassButtonText}>Create Donation</Text>
+            <Text style={styles.glassButtonText}>Crear Donación</Text>
           </View>
         </TouchableOpacity>
       </View>
@@ -181,7 +181,7 @@ const DonateScreen = ({ navigation }) => {
           marginHorizontal: 'auto',
           width: '100%',
         }}
-        ListHeaderComponent={<Text style={styles.title}>Your Donations</Text>}
+        ListHeaderComponent={<Text style={styles.title}>Tus Donaciones</Text>}
       />
     </SafeAreaView>
   );
