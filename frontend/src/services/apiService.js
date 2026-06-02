@@ -48,6 +48,7 @@ export const donationService = {
         if (filters.page) query.append('page', filters.page);
         if (filters.limit) query.append('limit', filters.limit);
         if (filters.donorId) query.append('donorId', filters.donorId);
+        if (filters.myTasks) query.append('myTasks', filters.myTasks);
 
         const queryString = query.toString() ? `?${query.toString()}` : '';
         return apiCall(`/donations${queryString}`);

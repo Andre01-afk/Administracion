@@ -1,4 +1,3 @@
-// CreateDonationForm.jsx
 import React, { useState } from "react";
 import {
   View,
@@ -17,6 +16,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import Toast from "react-native-toast-message";
 import { donationService, uploadService } from "../../services/apiService";
+import {Picker} from  '@react-native-picker/picker';
 
 export default function CreateDonationForm({ navigation }) {
   const [foodType, setFoodType] = useState("");
@@ -156,7 +156,7 @@ export default function CreateDonationForm({ navigation }) {
           {/* Food Type */}
           <Text style={styles.label}>Tipo de Comida</Text>
           <TextInput
-            placeholder="E.g., Rice, Sandwiches"
+            placeholder="E.g., Pizza, Arroz con Pollo"
             placeholderTextColor="#eee"
             style={styles.underlineInput}
             value={foodType}
@@ -394,6 +394,16 @@ const styles = StyleSheet.create({
   },
   photoButtonDisabled: {
     opacity: 0.6,
+  },
+  pickerContainer:{
+    borderBottomWidth: 1,
+    borderBottomColor: "white",
+    marginBottom: 10,
+    justifyContent: "center",
+  },
+  picker:{
+    color: "#fff",
+    marginLeft: -15,
   },
 });
 

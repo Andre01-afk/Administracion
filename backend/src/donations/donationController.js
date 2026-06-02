@@ -46,15 +46,30 @@ const createDonation = async (req, res) => {
 
 const getDonations = async (req, res) => {
   try {
-    const { area, status, sort = 'createdAt', page = 1, limit = 10, donorId } = req.query;
+    const { area, status, sort = 'createdAt', page = 1, limit = 10, donorId, myTasks } = req.query;
     
     const where = {};
-    
+    // Si myTasks=true, obtener solo las donaciones aceptadas por el voluntario actual
+    if (myTasks === 'true') {
+      // Encontrar todas las aceptaciones del voluntario actual
+      const acceptances = await prisma.acceptance.findMany({
+        where: { volunteerId: req.user.id }
+      });
+      
+      if (acceptances.length === 0) {
+        return res.json([]);
+      }
+      
+      const donationIds = acceptances.map(a => a.donationId);
+      where.id = { in: donationIds };
+      where.status = 'accepted';
+    }
     // Si donorId viene en la query, filtrar solo por ese donante (mis donaciones)
-    if (donorId) {
+    else if (donorId) {
       where.donorId = donorId;
-    } else {
-      // Si no hay donorId específico, mostrar solo donaciones "available"
+    } 
+    // Si no hay donorId específico, mostrar solo donaciones "available"
+    else {
       where.status = status || 'available';
     }
     
@@ -66,7 +81,7 @@ const getDonations = async (req, res) => {
     const donations = await prisma.donation.findMany({
       where,
       orderBy,
-      skip: (page - 1) * limit,
+      skip: (parseInt(page) - 1) * parseInt(limit),
       take: parseInt(limit),
       include: { photos: true, donor: { select: { name: true, phone: true } } }
     });
