@@ -32,7 +32,7 @@ const getDonorProfile = async (req, res) => {
 
 const createRating = async (req, res) => {
   try {
-    const { donationId, volunteerId, rating, comment } = req.body;
+    const { donationId, rating, comment } = req.body;
     
     const donation = await prisma.donation.findFirst({
       where: { 
@@ -41,7 +41,7 @@ const createRating = async (req, res) => {
         status: 'completed' 
       },
       include: {
-        acceptances: { where: { volunteerId } }
+        acceptances: true
       }
     });
 
@@ -49,16 +49,19 @@ const createRating = async (req, res) => {
       return res.status(400).json({ error: 'Invalid donation or volunteer' });
     }
 
+    const volunteerId = donation.acceptances[0].volunteerId;
+
     const newRating = await prisma.rating.create({
       data: { donationId, donorId: req.user.id, volunteerId, rating, comment }
     });
 
     res.json(newRating);
   } catch (error) {
+    console.error("Detalle del error en BD:", error); 
     if (error.code === 'P2002') {
-      return res.status(400).json({ error: 'Rating already exists' });
+      return res.status(400).json({ error: 'Ya calificaste esta donación antes.' });
     }
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: 'Error del servidor al guardar calificación' });
   }
 };
 

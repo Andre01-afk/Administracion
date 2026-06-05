@@ -69,6 +69,12 @@ export const donationService = {
         });
     },
 
+    cancelDonation: async(donationId) =>{
+        return apiCall(`/donations/${donationId}/cancel`, {
+            method: 'PUT',
+        });
+    },
+
     // Complete a donation (volunteer)
     completeDonation: async (donationId) => {
         return apiCall(`/donations/${donationId}/complete`, {
@@ -99,6 +105,12 @@ export const donorService = {
     // Get donor profile
     getProfile: async () => {
         return apiCall('/donors/profile');
+    },
+    createRating: async (ratingData) => {
+        return apiCall('/donors/ratings', {
+            method: 'POST',
+            body: JSON.stringify(ratingData),
+        });
     },
 };
 

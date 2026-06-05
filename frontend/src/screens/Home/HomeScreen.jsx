@@ -13,6 +13,7 @@ import {
 } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
+import {useAuth} from '../../context/AuthContext';
 
 // Import local images
 import food1 from '../../../assets/food1.jpg';
@@ -26,6 +27,7 @@ import communityImage from '../../../assets/community.jpg';
 
 const HomeScreen = ({ navigation }) => {
     const theme = useTheme();
+    const { user } = useAuth();
 
     // Mock data - in production, fetch from API
     const [stats, setStats] = useState({
@@ -193,20 +195,23 @@ const HomeScreen = ({ navigation }) => {
                 <View style={styles.quickActionsContainer}>
                     <Text style={styles.sectionTitle}>Acciones Rápidas</Text>
                     <View style={styles.quickActionsRow}>
-                        <QuickActionButton
-                            icon="favorite"
-                            label="Donar Comida"
-                            onPress={() => navigation.navigate('Donate')}
-                            color="#1ABC9C"
-                            image={food2}
-                        />
+                        {user?.role  === 'donor'&&  (
+                            <QuickActionButton
+                                icon="favorite"
+                                label="Donar Comida"
+                                onPress={() => navigation.navigate('Donate')}
+                                color="#1ABC9C"
+                            />
+                        )}
+                        {user?.role == 'volunteer' && (
                         <QuickActionButton
                             icon="volunteer-activism"
                             label="Ser Voluntario"
                             onPress={() => navigation.navigate('Volunteer')}
                             color="#2980B9"
-                            image={food1}
+                            image={food2}
                         />
+                        )}
                     </View>
                 </View>
 

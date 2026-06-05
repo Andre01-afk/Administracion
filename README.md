@@ -1,606 +1,279 @@
-# ShareMeal - Food Donation Platform
-
-ShareMeal is a comprehensive food donation platform that connects food donors with volunteers to reduce food waste and fight hunger in communities. The application enables seamless coordination between donors who want to share excess food and volunteers who help distribute it to those in need.
-
-
-## ✨ Features
-
-### Core Functionality
-- **User Authentication & Authorization**: Secure registration and login with role-based access control (Donor/Volunteer)
-- **Food Donation Management**: Create, view, and manage food donations with photos
-- **Volunteer Matching**: Smart matching system to connect donations with nearby volunteers
-- **Real-time Analytics**: Track meals served, donations, and community impact
-- **Rating System**: Donors can rate volunteers after successful donations
-- **Image Upload**: Support for multiple photos per donation
-
-## 🛠 Tech Stack
-
+# 🍽️ ShareMeal
+ 
+**ShareMeal** es una plataforma integral de donación de alimentos que conecta a donantes con voluntarios para reducir el desperdicio de comida y combatir el hambre en las comunidades. La aplicación facilita la coordinación fluida entre los restaurantes/donantes que desean compartir sus excedentes y los voluntarios que ayudan a distribuirlos a quienes más lo necesitan.
+ 
+---
+ 
+## ✨ Características Principales
+ 
+- **🔐 Autenticación y Autorización:** Registro e inicio de sesión seguros con control de acceso basado en roles (Donante / Voluntario).
+- **📦 Gestión de Donaciones:** Creación, visualización y administración de donaciones de alimentos con soporte para fotografías.
+- **🧠 Algoritmo de Emparejamiento (Matchmaking):** Sistema inteligente para conectar donaciones con los voluntarios más adecuados y cercanos basados en puntuación y experiencia.
+- **📊 Analíticas en Tiempo Real:** Seguimiento de platos servidos, donaciones activas y el impacto general en la comunidad.
+- **⭐ Sistema de Calificación:** Los donantes pueden evaluar a los voluntarios tras completar exitosamente una entrega.
+- **📸 Subida de Imágenes:** Soporte para adjuntar múltiples fotografías por donación para mayor transparencia.
+---
+ 
+## 🛠️ Stack Tecnológico
+ 
 ### Backend
-- **Runtime**: Node.js
-- **Framework**: Express.js
-- **Database**: MySQL (via Prisma ORM)
-- **Authentication**: JWT (JSON Web Tokens)
-- **Password Hashing**: bcrypt
-- **File Upload**: Multer
-- **Rate Limiting**: express-rate-limit
-- **Validation**: Built-in Express validation
-
+ 
+| Componente | Tecnología |
+|---|---|
+| Entorno | Node.js |
+| Framework | Express.js |
+| Base de Datos | MySQL (a través del ORM Prisma) |
+| Autenticación | JWT (JSON Web Tokens) |
+| Seguridad de Contraseñas | bcrypt |
+| Gestión de Archivos | Multer |
+| Control de Tráfico | express-rate-limit |
+ 
 ### Frontend
-- **Framework**: React Native
-- **Platform**: Expo
-- **UI Library**: React Native Paper
-- **Navigation**: React Navigation (Stack & Bottom Tabs)
-- **State Management**: React Context API
-- **Local Storage**: AsyncStorage
-- **Image Picker**: Expo Image Picker
-- **Icons**: Expo Vector Icons, Material Icons
-
-## 📁 Project Structure
-
-```
+ 
+| Componente | Tecnología |
+|---|---|
+| Framework | React Native |
+| Plataforma | Expo |
+| Librería UI | React Native Paper |
+| Navegación | React Navigation (Stack & Bottom Tabs) |
+| Gestión de Estado | React Context API |
+| Almacenamiento Local | AsyncStorage |
+| Cámara/Galería | Expo Image Picker |
+| Iconos | Expo Vector Icons, Material Icons |
+ 
+---
+ 
+## 📁 Estructura del Proyecto
+ 
+```text
 ShareMeal/
 ├── backend/
 │   ├── middleware/
-│   │   ├── auth.js              # JWT authentication middleware
-│   │   └── authorisation.js     # Role-based authorization
+│   │   ├── auth.js              # Middleware de autenticación JWT
+│   │   └── authorisation.js     # Autorización basada en roles
 │   ├── prisma/
-│   │   ├── schema.prisma        # Database schema
-│   │   └── migrations/          # Database migrations
+│   │   ├── schema.prisma        # Esquema de la base de datos
+│   │   └── migrations/          # Migraciones de la base de datos
 │   ├── src/
-│   │   ├── auth/                # Authentication routes & controllers
-│   │   ├── users/               # User management
-│   │   ├── donations/           # Donation CRUD operations
-│   │   ├── volunteers/          # Volunteer-specific features
-│   │   ├── donors/              # Donor-specific features
-│   │   ├── matching/            # Smart matching algorithm
-│   │   └── analytics/           # Analytics & statistics
-│   └── server.js               # Express server setup
+│   │   ├── auth/                # Rutas y controladores de autenticación
+│   │   ├── users/               # Gestión general de usuarios
+│   │   ├── donations/           # Operaciones CRUD de donaciones
+│   │   ├── volunteers/          # Funciones específicas para voluntarios
+│   │   ├── donors/              # Funciones específicas para donantes
+│   │   ├── matching/            # Algoritmo de emparejamiento inteligente
+│   │   └── analytics/           # Estadísticas y métricas
+│   └── server.js                # Archivo principal de Express
 │
 └── frontend/
     ├── src/
     │   ├── context/
-    │   │   └── AuthContext.jsx  # Authentication context
+    │   │   └── AuthContext.jsx  # Contexto global de autenticación
     │   ├── navigation/
-    │   │   └── TabNavigator.jsx  # Bottom tab navigation
+    │   │   └── TabNavigator.jsx # Navegación inferior (Bottom tabs)
     │   └── screens/
-    │       ├── Splash/          # Splash screen
-    │       ├── Login/           # Login screen
-    │       ├── Register/        # Registration screen
-    │       ├── Home/            # Home dashboard
-    │       ├── Donate/          # Donation screens
-    │       ├── Volunteer/       # Volunteer dashboard
-    │       └── Profile/         # User profile
-    └── assets/                  # Images and static assets
+    │       ├── Splash/          # Pantalla de carga (Splash screen)
+    │       ├── Login/           # Pantalla de inicio de sesión
+    │       ├── Register/        # Pantalla de registro
+    │       ├── Home/            # Panel principal (Home)
+    │       ├── Donate/          # Pantallas de donación
+    │       ├── Volunteer/       # Panel del voluntario
+    │       └── Profile/         # Perfil de usuario
+    └── assets/                  # Imágenes, fuentes y recursos estáticos
 ```
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js (v14 or higher)
-- MySQL database
-- Expo CLI (for frontend)
-- npm or yarn
-
-### Backend Setup
-
-1. **Navigate to backend directory**
+ 
+---
+ 
+## 🚀 Guía de Inicio
+ 
+### Requisitos Previos
+ 
+- Node.js (v14 o superior)
+- Base de datos MySQL en ejecución
+- Expo CLI (para el frontend)
+- npm o yarn
+### Configuración del Backend
+ 
+1. Navega al directorio del backend:
    ```bash
    cd backend
    ```
-
-2. **Install dependencies**
+ 
+2. Instala las dependencias:
    ```bash
    npm install
    ```
-
-3. **Set up environment variables**
-   Create a `.env` file in the backend directory:
+ 
+3. Configura las variables de entorno — crea un archivo `.env` en la raíz de la carpeta `backend`:
    ```env
-   DATABASE_URL="mysql://user:password@localhost:3306/sharemeal"
-   JWT_SECRET="your-secret-key"
+   DATABASE_URL="mysql://usuario:contraseña@localhost:3306/sharemeal"
+   JWT_SECRET="tu-clave-secreta-aqui"
    PORT=3000
    ```
-
-4. **Set up database**
+ 
+4. Prepara la Base de Datos (Prisma):
    ```bash
    npm run db:generate
    npm run db:migrate
    ```
-
-5. **Start the server**
+ 
+5. Inicia el servidor:
    ```bash
-   npm run dev    # Development mode with nodemon
-   # or
-   npm start      # Production mode
+   npm run dev    # Modo desarrollo (con nodemon)
+   # o
+   npm start      # Modo producción
    ```
-
-### Frontend Setup
-
-1. **Navigate to frontend directory**
+ 
+### Configuración del Frontend
+ 
+1. Navega al directorio del frontend:
    ```bash
    cd frontend
    ```
-
-2. **Install dependencies**
+ 
+2. Instala las dependencias:
    ```bash
    npm install
    ```
-
-3. **Start Expo development server**
+ 
+3. Inicia el servidor de desarrollo de Expo:
    ```bash
    npm start
-   # or
+   # o
    expo start
    ```
-
-4. **Run on specific platform**
+ 
+4. Ejecuta en tu plataforma preferida:
    ```bash
-   npm run ios      # iOS simulator
-   npm run android # Android emulator
-   npm run web      # Web browser
+   npm run ios      # Emulador de iOS
+   npm run android  # Emulador de Android
+   npm run web      # Navegador Web
    ```
-
-## 🔧 Backend Features
-
-### Authentication & Authorization
-- **User Registration**: Create new accounts with email, password, name, phone, and role
-- **User Login**: JWT-based authentication
-- **Role-Based Access Control**: Separate permissions for Donors and Volunteers
-- **Password Security**: bcrypt hashing for password storage
-- **JWT Tokens**: Secure token-based authentication
-
-### Donation Management
-- **Create Donation**: Donors can create donations with:
-  - Food type and quantity
-  - Pickup address and area
-  - Preferred pickup time
-  - Contact information
-  - Multiple photos
-  - Suggested volunteer (optional)
-- **View Donations**: Filter and sort donations by:
-  - Area/location
-  - Status (available, accepted, completed, cancelled)
-  - Pickup time
-  - Creation date
-- **Accept Donation**: Volunteers can accept available donations
-- **Complete Donation**: Volunteers mark donations as completed
-- **Status Tracking**: Real-time status updates (available → accepted → completed)
-
-### Smart Matching System
-- **Volunteer Matching**: Algorithm to match donations with nearby volunteers
-- **Donation Suggestions**: Donors can suggest specific volunteers
-- **Location-Based Matching**: Match based on area and proximity
-
-### Analytics & Statistics
-- **Platform Metrics**:
-  - Total meals served
-  - Active donations count
-  - Completed donations count
-  - Area-wise statistics
-- **Donor Statistics**:
-  - Total donations made
-  - Total meals shared
-  - Completed donations count
-- **Volunteer Dashboard**: Volunteer-specific statistics and tasks
-
-### User Management
-- **Profile Management**: View and update user profiles
-- **Donor Profile**: Track donation history and statistics
-- **Volunteer Profile**: Track volunteer activities and dashboard
-
-### Rating System
-- **Donor Ratings**: Donors can rate volunteers after donation completion
-- **Rating Details**: 1-5 star ratings with optional comments
-- **Rating History**: Track all ratings given and received
-
-### File Upload
-- **Image Upload**: Support for multiple donation photos
-- **Static File Serving**: Serve uploaded images via `/uploads` endpoint
-- **Multer Integration**: Handle multipart/form-data for file uploads
-
-### Security Features
-- **CORS**: Cross-Origin Resource Sharing enabled
-- **Rate Limiting**: Prevent API abuse with express-rate-limit
-- **Input Validation**: Server-side validation for all inputs
-- **Error Handling**: Comprehensive error handling and responses
-
-## 📱 Frontend Features
-
-### Authentication Screens
-- **Splash Screen**: App loading screen with branding
-- **Login Screen**: User authentication with email and password
-- **Register Screen**: New user registration with role selection
-- **Auth Context**: Global authentication state management
-- **Persistent Login**: AsyncStorage for session persistence
-
-### Home Screen
-- **Dynamic Greeting**: Time-based greetings (Good Morning/Afternoon/Evening)
-- **Statistics Dashboard**: 
-  - Total meals served
-  - Active donations
-  - Completed donations
-  - Total volunteers
-  - Communities served
-- **Quick Actions**: 
-  - Donate Food button
-  - Volunteer button
-- **How It Works Section**: 
-  - Step-by-step process visualization
-  - Images for each step
-  - Step badges and icons
-- **Community Impact Stories**: 
-  - Community Kitchen Initiative
-  - School Meal Program
-  - Image backgrounds with overlay text
-- **Mission Statement**: 
-  - Platform mission and values
-  - Mission statistics (100% Transparent, 24/7 Available, Free Service)
-  - Background image with overlay
-
-### Donation Screens
-- **Donate Screen**: 
-  - List of user's donations
-  - Donation status (Available, Accepted, Cancelled)
-  - Create new donation button
-- **Create Donation Form**: 
-  - Food type input
-  - Quantity input
-  - Address and area selection
-  - Contact information
-  - Pickup time selection
-  - Multiple image picker
-  - Notes/instructions field
-  - Form validation
-  - Image preview
-  - Local storage integration
-
-### Volunteer Dashboard
-- **Dashboard Tabs**: 
-  - Available Donations tab
-  - My Tasks tab
-- **Filter Section**: 
-  - Search by area or food type
-  - Sort options (nearest, earliest, newest)
-  - Food type filter (all, veg, non-veg)
-  - Packaging filter (all, packaged, fresh)
-- **Donation Cards**: 
-  - Food type and description
-  - Location and distance
-  - Pickup time
-  - Meal count
-  - Veg/Non-veg indicator
-  - Packaged/Fresh indicator
-  - Food images
-  - Accept button
-- **Donation Details Modal**: 
-  - Full donation information
-  - Donor contact details
-  - Pickup instructions
-  - Full address
-  - Accept functionality
-- **My Tasks Section**: 
-  - Accepted donations list
-  - Task completion functionality
-  - Task details and status
-
-### Profile Screen
-- **User Profile**: Display user information and statistics
-
-### Navigation
-- **Bottom Tab Navigator**: 
-  - Home tab
-  - Donate tab
-  - Volunteer tab
-  - Profile tab
-- **Stack Navigator**: 
-  - Splash → Main navigation
-  - Create Donation Form screen
-- **Screen Transitions**: Smooth navigation between screens
-
-### UI/UX Features
-- **React Native Paper**: Material Design components
-- **Custom Styling**: Consistent design system
-- **Image Support**: Multiple image formats (JPG, PNG, WEBP)
-- **Icons**: Material Icons and Community Icons
-- **Safe Area**: Proper handling of device safe areas
-- **Responsive Design**: Adapts to different screen sizes
-- **Loading States**: Loading indicators where needed
-- **Error Handling**: User-friendly error messages
-- **Form Validation**: Real-time form validation
-
-### Assets & Images
-- **Food Images**: Various food donation images
-- **Community Images**: Community kitchen and donation images
-- **Form Images**: Form and donation process images
-- **Splash Image**: App branding image
-- **Icons**: App icon and UI icons
-
-## 📡 API Documentation
-
-### Base URL
+ 
+---
+ 
+## 🔧 Funcionalidades del Backend
+ 
+### Autenticación y Autorización
+ 
+- **Registro de Usuarios:** Creación de cuentas con correo, contraseña, nombre, teléfono y rol.
+- **Inicio de Sesión:** Autenticación protegida mediante JWT.
+- **Control de Acceso (RBAC):** Permisos separados para Donantes y Voluntarios.
+- **Seguridad:** Encriptado de contraseñas usando bcrypt.
+### Gestión de Donaciones
+ 
+- **Crear Donación:** Los donantes pueden publicar tipo de comida, cantidad, dirección, zona, horario preferido, múltiples fotos e incluso sugerir un voluntario.
+- **Visualizar Donaciones:** Filtros y ordenamiento por zona, estado (`available`, `accepted`, `completed`, `cancelled`), horario y fecha de creación.
+- **Aceptar Donación:** Los voluntarios pueden reclamar las donaciones disponibles.
+- **Completar Donación:** Los voluntarios marcan las entregas como finalizadas.
+### Sistema de Emparejamiento (Matchmaking)
+ 
+- **Asignación de Voluntarios:** Algoritmo que puntúa a los voluntarios basándose en su calificación promedio (estrellas) y experiencia previa.
+- **Sugerencias Automáticas:** El sistema auto-asigna al mejor voluntario disponible al momento de crear la donación.
+### Analíticas y Estadísticas
+ 
+- **Métricas de la Plataforma:** Total de platos servidos, donaciones activas, completadas y estadísticas por zona.
+- **Métricas del Donante/Voluntario:** Historial completo de impacto personal y tareas.
+### Sistema de Calificaciones
+ 
+- Los donantes evalúan a los voluntarios (1 a 5 estrellas) tras completar una entrega, con opción a dejar comentarios. Esta calificación alimenta el sistema de Matchmaking.
+---
+ 
+## 📱 Funcionalidades del Frontend
+ 
+### Interfaz de Usuario (UI/UX)
+ 
+- Diseño limpio usando React Native Paper (Material Design).
+- **Navegación Intuitiva:** Transiciones suaves entre el Home, panel de Donaciones, panel de Voluntariado y Perfil.
+- **Notificaciones Simuladas (Toasts):** Alertas en tiempo real sobre cambios de estado en las donaciones y confirmaciones de acciones.
+- **Modales Elegantes:** Cuadros de diálogo personalizados para confirmación de cancelaciones y sistema de calificación flotante.
+### Pantallas Principales
+ 
+- **Home:** Dashboard dinámico con saludos según la hora del día, métricas globales de la app y botones de acción rápida.
+- **Donante (Dashboard):** Lista de donaciones realizadas, estado en tiempo real, botón para cancelar envíos y modal para calificar al voluntario al finalizar.
+- **Crear Donación (Formulario):** Inputs validados, selector de imágenes, campos de dirección y notas adicionales.
+- **Voluntario (Dashboard):** Pestañas divididas entre "Donaciones Disponibles" y "Mis Tareas". Incluye filtros por zona, tipo de comida y empaque.
+---
+ 
+## 📡 Documentación de la API
+ 
+### URL Base
+ 
 ```
 http://localhost:3000/api/v1
 ```
-
-### Authentication Endpoints
-
-#### Register
-```
-POST /auth/register
-Body: {
-  name: string,
-  email: string,
-  password: string,
-  phone?: string,
-  role: "donor" | "volunteer"
-}
-```
-
-#### Login
-```
-POST /auth/login
-Body: {
-  email: string,
-  password: string
-}
-Response: {
-  token: string,
-  user: User
-}
-```
-
-### Donation Endpoints
-
-#### Create Donation
-```
-POST /donations
-Headers: { Authorization: "Bearer <token>" }
-Body: {
-  foodType: string,
-  approxQuantity: number,
-  quantityUnit?: string,
-  area: string,
-  pickupAddress: string,
-  preferredPickupTime?: DateTime,
-  contactNumber?: string,
-  photos?: string[],
-  suggestedVolunteerId?: string
-}
-```
-
-#### Get Donations
-```
-GET /donations?area=&status=&sort=&page=&limit=
-Headers: { Authorization: "Bearer <token>" }
-```
-
-#### Accept Donation
-```
-POST /donations/:id/accept
-Headers: { Authorization: "Bearer <token>" }
-Role: volunteer
-```
-
-#### Complete Donation
-```
-POST /donations/:id/complete
-Headers: { Authorization: "Bearer <token>" }
-Role: volunteer
-```
-
-### User Endpoints
-
-#### Get Profile
-```
-GET /users/profile
-Headers: { Authorization: "Bearer <token>" }
-```
-
-#### Update Profile
-```
-PUT /users/profile
-Headers: { Authorization: "Bearer <token>" }
-Body: { name?, phone?, ... }
-```
-
-### Volunteer Endpoints
-
-#### Get Volunteer Profile
-```
-GET /volunteers/profile
-Headers: { Authorization: "Bearer <token>" }
-Role: volunteer
-```
-
-#### Get Volunteer Dashboard
-```
-GET /volunteers/dashboard
-Headers: { Authorization: "Bearer <token>" }
-Role: volunteer
-```
-
-### Donor Endpoints
-
-#### Get Donor Profile
-```
-GET /donors/profile
-Headers: { Authorization: "Bearer <token>" }
-Role: donor
-```
-
-#### Create Rating
-```
-POST /donors/ratings
-Headers: { Authorization: "Bearer <token>" }
-Role: donor
-Body: {
-  donationId: string,
-  volunteerId: string,
-  rating: number (1-5),
-  comment?: string
-}
-```
-
-### Matching Endpoints
-
-#### Get Matched Donations
-```
-GET /matching/donations
-Headers: { Authorization: "Bearer <token>" }
-Role: volunteer
-```
-
-#### Suggest Volunteer
-```
-POST /matching/suggest
-Headers: { Authorization: "Bearer <token>" }
-Role: donor
-Body: {
-  donationId: string,
-  volunteerId: string
-}
-```
-
-### Analytics Endpoints
-
-#### Get Platform Metrics
-```
-GET /analytics/metrics
-Headers: { Authorization: "Bearer <token>" }
-Response: {
-  totalMealsServed: number,
-  activeDonations: number,
-  completedDonations: number,
-  areaStats: Array<{
-    area: string,
-    donationsCount: number,
-    mealsServed: number
-  }>
-}
-```
-
-#### Get Donor Statistics
-```
-GET /analytics/donor/:donorId
-Headers: { Authorization: "Bearer <token>" }
-Response: {
-  totalDonations: number,
-  totalMealsShared: number,
-  completedDonations: number
-}
-```
-
-## 🗄 Database Schema
-
-### Models
-
-#### User
-- `id`: UUID (Primary Key)
-- `name`: String
-- `email`: String (Unique)
-- `phone`: String (Optional)
-- `password`: String (Hashed)
-- `role`: String ("donor" | "volunteer")
-- `createdAt`: DateTime
-
-#### Donation
-- `id`: UUID (Primary Key)
-- `donorId`: UUID (Foreign Key → User)
-- `foodType`: String
-- `approxQuantity`: Integer
-- `quantityUnit`: String (default: "portions")
-- `area`: String
-- `pickupAddress`: String
-- `preferredPickupTime`: DateTime (Optional)
-- `contactNumber`: String (Optional)
-- `status`: String (default: "available")
-- `suggestedVolunteerId`: UUID (Optional)
-- `createdAt`: DateTime
-- `acceptedAt`: DateTime (Optional)
-- `completedAt`: DateTime (Optional)
-
-#### DonationPhoto
-- `id`: UUID (Primary Key)
-- `donationId`: UUID (Foreign Key → Donation)
-- `url`: String
-
-#### Acceptance
-- `id`: UUID (Primary Key)
-- `donationId`: UUID (Foreign Key → Donation)
-- `volunteerId`: UUID (Foreign Key → User)
-- `status`: String (default: "accepted")
-- `acceptedAt`: DateTime
-- `completedAt`: DateTime (Optional)
-
-#### Rating
-- `id`: UUID (Primary Key)
-- `donationId`: UUID (Foreign Key → Donation)
-- `donorId`: UUID (Foreign Key → User)
-- `volunteerId`: UUID (Foreign Key → User)
-- `rating`: Integer (1-5)
-- `comment`: String (Optional)
-- `createdAt`: DateTime
-
-## 🔐 Environment Variables
-
-### Backend (.env)
-```env
-# Database
-DATABASE_URL="mysql://user:password@localhost:3306/sharemeal"
-
-# JWT
-JWT_SECRET="your-secret-key-here"
-
-# Server
-PORT=3000
-
-# File Upload
-UPLOAD_DIR="./uploads"
-```
-
-## 📦 Dependencies
-
-### Backend Dependencies
-- `express`: Web framework
-- `@prisma/client`: Prisma ORM client
-- `bcrypt`: Password hashing
-- `jsonwebtoken`: JWT authentication
-- `multer`: File upload handling
-- `cors`: Cross-origin resource sharing
-- `dotenv`: Environment variable management
-- `express-rate-limit`: API rate limiting
-
-### Frontend Dependencies
-- `react-native`: Mobile framework
-- `expo`: React Native framework
-- `react-native-paper`: Material Design components
-- `@react-navigation/native`: Navigation library
-- `@react-navigation/bottom-tabs`: Bottom tab navigation
-- `@react-navigation/native-stack`: Stack navigation
-- `@react-native-async-storage/async-storage`: Local storage
-- `expo-image-picker`: Image selection
-- `@expo/vector-icons`: Icon library
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-
-## 👥 Authors
-
-- ShareMeal Development Team
-
-## 🙏 Acknowledgments
-
-- Community volunteers and donors
-- Open source contributors
-- Food security organizations
-
+ 
+### 🔑 Autenticación
+ 
+| Método | Endpoint | Descripción |
+|---|---|---|
+| `POST` | `/auth/register` | Registro de usuario. Body: `{ name, email, password, phone?, role }` |
+| `POST` | `/auth/login` | Inicio de sesión. Body: `{ email, password }` |
+ 
+### 📦 Donaciones
+ 
+| Método | Endpoint | Descripción |
+|---|---|---|
+| `POST` | `/donations` | Crear donación (requiere token). Body: `{ foodType, approxQuantity, quantityUnit?, area, pickupAddress, preferredPickupTime?, contactNumber?, photos?, suggestedVolunteerId? }` |
+| `GET` | `/donations` | Listar donaciones. Query params: `area`, `status`, `sort`, `page`, `limit`, `donorId` |
+| `PUT` | `/donations/:id/cancel` | Cancelar una donación (requiere token) |
+| `POST` | `/donations/:id/accept` | Aceptar donación (requiere token — rol: Voluntario) |
+| `POST` | `/donations/:id/complete` | Completar donación (requiere token — rol: Voluntario) |
+ 
+### 👤 Usuarios y Perfiles
+ 
+| Método | Endpoint | Descripción |
+|---|---|---|
+| `GET` | `/users/profile` | Obtener perfil del usuario autenticado |
+| `PUT` | `/users/profile` | Actualizar perfil del usuario |
+| `GET` | `/volunteers/dashboard` | Dashboard del voluntario (requiere token) |
+| `GET` | `/donors/profile` | Perfil del donante (requiere token) |
+ 
+### ⭐ Calificaciones
+ 
+| Método | Endpoint | Descripción |
+|---|---|---|
+| `POST` | `/donors/ratings` | Calificar voluntario (requiere token — rol: Donante). Body: `{ donationId, rating (1-5), comment? }` |
+ 
+### 📊 Analíticas
+ 
+| Método | Endpoint | Descripción |
+|---|---|---|
+| `GET` | `/analytics/metrics` | Métricas globales de la plataforma (requiere token) |
+| `GET` | `/analytics/donor/:donorId` | Métricas por donante (requiere token) |
+ 
 ---
-
-**Note**: This is a comprehensive food donation platform designed to reduce food waste and help communities in need. For questions or support, please open an issue in the repository.
-
+ 
+## 🗄️ Esquema de Base de Datos
+ 
+| Modelo | Campos Principales |
+|---|---|
+| `User` | `id` (UUID), `name`, `email`, `phone`, `password`, `role`, `createdAt` |
+| `Donation` | `id` (UUID), `donorId`, `foodType`, `approxQuantity`, `quantityUnit`, `area`, `pickupAddress`, `status`, `suggestedVolunteerId`, fechas de control |
+| `DonationPhoto` | `id`, `donationId`, `url` |
+| `Acceptance` | `id` (UUID), `donationId`, `volunteerId`, `status`, fechas de control |
+| `Rating` | `id` (UUID), `donationId`, `donorId`, `volunteerId`, `rating`, `comment` |
+ 
+---
+ 
+## 📦 Dependencias Principales
+ 
+### Backend
+ 
+| Paquete | Descripción |
+|---|---|
+| `express` | Framework web para Node.js |
+| `@prisma/client` | Cliente ORM para conexión a la base de datos |
+| `bcrypt` | Encriptación segura de contraseñas |
+| `jsonwebtoken` | Generación y validación de tokens JWT |
+| `multer` | Manejo y subida de archivos e imágenes |
+ 
+### Frontend
+ 
+| Paquete | Descripción |
+|---|---|
+| `react-native` / `expo` | Frameworks de desarrollo móvil multiplataforma |
+| `react-native-paper` | Componentes visuales basados en Material Design |
+| `@react-navigation/...` | Librerías para manejo de rutas y pestañas |
+| `@react-native-async-storage/async-storage` | Almacenamiento local del token de sesión |
+| `react-native-toast-message` | Alertas visuales y notificaciones tipo toast |
+| `expo-image-picker` | Acceso a galería y cámara del dispositivo |

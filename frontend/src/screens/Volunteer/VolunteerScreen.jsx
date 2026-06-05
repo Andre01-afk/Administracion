@@ -115,18 +115,19 @@ const VolunteerScreen = () => {
       // Recargar datos desde el servidor
       await loadDonations();
       await loadAcceptedTasks();
-      
       Toast.show({
-        type: 'success',
-        text1: 'Éxito',
-        text2: 'Donación aceptada correctamente',
-        duration: 2000,
+        type: 'success', 
+        text1: ' ¡Ruta Asignada!',
+        text2: `Has aceptado recoger: ${donation.foodType}. El restaurante te espera.`,
+        position: 'top',
+        visibilityTime: 4000,
+        topOffset: 50,
       });
     } catch (error) {
       Toast.show({
         type: 'error',
         text1: 'Error',
-        text2: error.message || 'No se pudo aceptar la donación',
+        text2: error.message || 'Alguien más aceptó esta donación primero.',
         duration: 2000,
       });
       console.error('Error accepting donation:', error);

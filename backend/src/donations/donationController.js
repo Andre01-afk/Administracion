@@ -121,11 +121,9 @@ const getDonations = async (req, res) => {
       where.id = { in: donationIds };
       where.status = 'accepted';
     }
-    // Si donorId viene en la query, filtrar solo por ese donante (mis donaciones)
     else if (donorId) {
       where.donorId = donorId;
     } 
-    // Si no hay donorId específico, mostrar solo donaciones "available"
     else {
       where.status = status || 'available';
     }
@@ -140,7 +138,7 @@ const getDonations = async (req, res) => {
       orderBy,
       skip: (parseInt(page) - 1) * parseInt(limit),
       take: parseInt(limit),
-      include: { photos: true, donor: { select: { name: true, phone: true } } }
+      include: { photos: true, donor: { select: { name: true, phone: true } },ratings: true }
     });
 
     res.json(donations); 
@@ -179,6 +177,37 @@ const acceptDonation = async (req, res) => {
   }
 };
 
+const cancelDonation = async (req,res) =>{
+  try {
+    const donation = await prisma.donation.findFirst({
+      where: { 
+        id: req.params.id, 
+        donorId: req.user.id 
+      }
+    });
+
+    if (!donation) {
+      return res.status(404).json({ error: 'Donación no encontrada o no tienes permiso para cancelarla' });
+    }
+
+    if (donation.status === 'completed') {
+      return res.status(400).json({ error: 'No puedes cancelar una donación que ya fue entregada' });
+    }
+
+    const cancelledDonation = await prisma.donation.update({
+      where: { id: req.params.id },
+      data: { status: 'cancelled' }
+    });
+
+    res.json({ message: 'Donación cancelada exitosamente', donation: cancelledDonation });
+  } catch (error) {
+    console.error('Error canceling donation:', error);
+    res.status(500).json({ error: 'Error del servidor al cancelar la donación' });
+  }
+};
+
+
+
 const completeDonation = async (req, res) => {
   try {
     const acceptance = await prisma.acceptance.findFirst({
@@ -206,4 +235,4 @@ const completeDonation = async (req, res) => {
   }
 };
 
-module.exports = { createDonation, getDonations, acceptDonation, completeDonation };
+module.exports = { createDonation, getDonations, acceptDonation, completeDonation, cancelDonation };

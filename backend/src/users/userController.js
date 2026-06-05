@@ -17,17 +17,16 @@ const getProfile = async (req, res) => {
 
 const updateProfile = async (req, res) => {
   try {
-    const { name, phone } = req.body;
+    const { name, phone, email } = req.body;
     
-    const user = await prisma.user.update({
+    const updatedUser = await prisma.user.update({
       where: { id: req.user.id },
-      data: { name, phone },
-      select: { id: true, name: true, email: true, phone: true, role: true }
+      data: { name, phone ,email}
     });
 
-    res.json(user);
+    res.json(updatedUser);
   } catch (error) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: 'Error al actualizar perfil' });
   }
 };
 
