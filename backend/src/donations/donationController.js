@@ -36,11 +36,68 @@ const createDonation = async (req, res) => {
       },
       include: { photos: true }
     });
+    if(!suggestedVolunteerId){
+      await autoSuggestVolunteer(donation.id, donation.area);
+    }
 
     res.json(donation);
   } catch (error) {
     console.error('Error creating donation:', error);
     res.status(500).json({ error: error.message || 'Server error' });
+  }
+};
+
+
+const autoSuggestVolunteer = async (donationId, area) =>{
+  try{
+    const busyIds = await prisma.acceptance.findMany({
+      where: { status: 'accepted' },
+      select: { volunteerId: true }
+    }).then(acc => acc.map(a => a.volunteerId));
+
+    const volunteers = await prisma.user.findMany({
+      where: { role: 'volunteer', id: { notIn: busyIds } },
+      include: {
+        acceptances: {
+          where: { status: 'completed' },
+          include: { donation: { select: { area: true } } }
+        },
+        ratingsReceived: { select: { rating: true } }
+      }
+    });
+
+    if (volunteers.length === 0) return;
+
+    const scored = volunteers.map(v => {
+      const avgRating = v.ratingsReceived.length > 0
+        ? v.ratingsReceived.reduce((sum, r) => sum + r.rating, 0) / v.ratingsReceived.length
+        : 0;
+      const areaBonus = v.acceptances.some(
+        a => a.donation?.area?.toLowerCase().includes(area.toLowerCase())
+      ) ? 2 : 0;
+      const experienceBonus = Math.min(v.acceptances.length * 0.1, 1);
+      return { id: v.id,
+        score: avgRating + areaBonus + experienceBonus ,
+        totalRatings: v.ratingsReceived.length,
+        completedTasks: v.acceptances.length,
+        createdAt: v.createdAt,
+      };
+    });
+
+    const best = scored.sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      if(b.totalRatings !== a.totalRatings) return b.totalRatings - a.totalRatings;
+      if(b.completedTasks !== a.completedTasks) return b.completedTasks - a.completedTasks;
+      return new Date(a.createdAt) - new Date(b.createdAt);
+    })[0];
+
+    await prisma.donation.update({
+      where: { id: donationId },
+      data: { suggestedVolunteerId: best.id }
+
+    });
+  }catch(err){
+    console.error('AutoSuggest Error',err)
   }
 };
 

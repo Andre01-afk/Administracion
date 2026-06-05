@@ -4,7 +4,7 @@ import { Card, Button, Avatar, useTheme } from 'react-native-paper';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { getFirstValidPhoto, isValidImageUrl } from '../../../utils/imageUtils';
 
-const DonationCard = ({ donation, onAccept, onPress, isAccepted = false }) => {
+const DonationCard = ({ donation, onAccept, onPress, isAccepted = false, currentUserId }) => {
   const theme = useTheme();
   const [imageError, setImageError] = useState(false);
   
@@ -21,6 +21,7 @@ const DonationCard = ({ donation, onAccept, onPress, isAccepted = false }) => {
     photos,
     donor,
     status,
+    suggestedVolunteerId,
   } = donation;
 
   // Calcular fecha/hora
@@ -40,6 +41,13 @@ const DonationCard = ({ donation, onAccept, onPress, isAccepted = false }) => {
 
   return (
     <Card style={styles.card} onPress={onPress}>
+      
+      {suggestedVolunteerId === currentUserId && (
+        <View style={styles.suggestedBadge}>
+            <MaterialIcons name="star" size={14} color="#fff" />
+            <Text style={styles.suggestedText}>⭐ Recomendado para ti</Text>
+        </View>
+    )}
       <View style={styles.cardContent}>
         <View style={styles.imageContainer}>
           {hasValidPhoto ? (
@@ -215,6 +223,21 @@ const styles = StyleSheet.create({
   },
   buttonContent: {
     height: 44,
+  },
+  suggestedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1ABC9C',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+    gap: 4,
+  },
+  suggestedText:{
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
   },
 });
 

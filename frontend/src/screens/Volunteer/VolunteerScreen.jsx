@@ -21,8 +21,10 @@ import DonationDetails from './components/DonationDetails';
 import FilterSection from './components/FilterSection';
 import DashboardTabs from './components/DashboardTabs';
 import MyTaskCard from './components/MyTaskCard';
+import { useAuth } from '../../context/AuthContext';
 
 const VolunteerScreen = () => {
+  const { user } = useAuth();
   const theme = useTheme();
   const [activeTab, setActiveTab] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
@@ -99,8 +101,8 @@ const VolunteerScreen = () => {
         case 'earliest':
           return new Date(a.preferredPickupTime || 0) - new Date(b.preferredPickupTime || 0);
         case 'suggested':
-          if (a.suggestedVolunteerId === currentUser?.id) return -1;
-          if (b.suggestedVolunteerId === currentUser?.id) return 1;
+          if (a.suggestedVolunteerId === user?.id) return -1;
+          if (b.suggestedVolunteerId === user?.id) return 1;
           return 0;
       }
     });
@@ -198,6 +200,7 @@ const VolunteerScreen = () => {
                   donation={donation}
                   onAccept={() => handleAcceptDonation(donation)}
                   onPress={() => setSelectedDonation(donation)}
+                  currentUserId={user.id}
                 />
               ))
             ) : (
